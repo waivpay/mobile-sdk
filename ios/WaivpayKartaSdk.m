@@ -157,5 +157,5 @@ RCT_EXPORT_METHOD(createInAppProvMicrogiftsEvent:(NSString *)cardId)
 
                     }] resume];
 }
-RCT_EXPORT_MODULE(InAppProvModule);
+RCT_EXPORT_MODULE(WaivpayKartaSdk);
 @end

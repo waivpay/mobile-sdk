@@ -1,1 +1,1 @@
-export declare function multiply(a: number, b: number): Promise<number>;
+export declare function testLoggingEvent(a: String, b: String): void;

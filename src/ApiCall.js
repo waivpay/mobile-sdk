@@ -1,8 +1,8 @@
 import { EndPoints, EndPointsCashBack } from './util/ServerEndPoints';
 import { AsyncStorage } from 'react-native';
-import {Product} from './Models/Product'
+import { Product } from './Models/Product'
 import { Catalogue } from './Models/Catalogue';
-import {Brand} from './Models/Brand';
+import { Brand } from './Models/Brand';
 import { Location } from './Models/Location';
 import { Balance } from "./models/Balance";
 import { Transaction } from './Models/Transaction';
@@ -10,66 +10,70 @@ import { TransactionList } from './Models/TransactionList';
 import { CardList } from './Models/CardList';
 import { Card } from './Models/Card';
 import { Profile } from './Models/Profile';
+import { AppConfig } from './Models/AppConfig';
+import { Order } from './Models/Order';
+import { OrderItem } from './Models/OrderItem';
+import { RecipientAddress } from './Models/RecipientAddress';
+import { BillingAddress } from './Models/BillingAddress';
+import { OrderResponse } from './Models/OrderResponse';
 
 //sets client key,  client secret and appid in asyncstorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(clientId, clientSecret, appId) {
-  if (
-    clientId != null &&
-    clientId !== 'undefined' &&
-    clientSecret != null &&
-    clientSecret !== 'undefined' &&
-    appId != null &&
-    appId !== 'undefined'
-  ) {
-    await AsyncStorage.setItem(
-      'waivpay_sdk_config_appId',
-      JSON.stringify({
-        client_id: clientId,
-        client_secret: clientSecret,
-        appId: appId,
-      })
-    );
-  } else {
-    throw new Error('All parameters need to be passed to set config');
+  if (appConfig != null && appConfig instanceof AppConfig) {
+    var clientId = appConfig.clientId;
+    var clientSecret = appConfig.clientSecret;
+    var appId = appConfig.appId;
+    if (clientId != null && clientId !== 'undefined' && clientSecret != null && clientSecret !== 'undefined' && appId != null && appId !== 'undefined') {
+      await AsyncStorage.setItem("waivpay_sdk_config_appId", JSON.stringify({ "client_id": clientId, "client_secret": clientSecret, "appId": appId }));
+    }
+    else {
+      throw new Error('All parameters need to be passed to set config');
+    }
+  }
+  else {
+    throw new Error('Please use AppConfig class to pass app configuration parameters');
   }
 }
 
 // function to get an access token by authenticating with Waivpay Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
 const getAccessToken = new Promise(async function (resolve, reject) {
-  const accessToken = await AsyncStorage.getItem('accessToken');
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  if (typeof accessToken !== 'undefined' && accessToken != null) {
-    const accessToken_Obj = JSON.parse(accessToken);
-    const createdTime = accessToken_Obj.created_at + 6000;
-    const expiresAt = new Date(0); // The 0 there is the key, which sets the date to the epoch
+  var accessToken = await AsyncStorage.getItem("accessToken");
+  var config =await AsyncStorage.getItem("waivpay_sdk_config_appId");
+  if(config != 'undefined' && config != null)
+  {
+    if(typeof accessToken !== 'undefined' && accessToken != null)
+    {
+    var accessToken_Obj = JSON.parse(accessToken);
+    var createdTime = accessToken_Obj.created_at + 6000;
+    var expiresAt = new Date(0); // The 0 there is the key, which sets the date to the epoch
     expiresAt.setUTCSeconds(createdTime);
     if (accessToken_Obj.access_token != null && expiresAt > new Date()) {
       resolve(accessToken_Obj.access_token);
     }
-  } else {
-    const url = EndPoints.host + EndPoints.accessToken;
-    const data =
-      'grant_type=client_credentials&' +
-      'client_id=' +
-      JSON.parse(config).client_id +
-      '&client_secret=' +
-      JSON.parse(config).client_secret;
-
-    const xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-
-    xhr.addEventListener('readystatechange', function () {
-      if (this.readyState === 4) {
-        AsyncStorage.setItem('accessToken', this.responseText);
-        resolve(JSON.parse(this.responseText).access_token);
-      }
-    });
-
-    xhr.open('POST', url);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-    xhr.send(data);
+    }
+    else {
+      var url = EndPoints.host + EndPoints.accessToken;
+      var data = "grant_type=client_credentials&" + "client_id=" + JSON.parse(config).client_id + "&client_secret=" + JSON.parse(config).client_secret;
+  
+      var xhr = new XMLHttpRequest();
+      xhr.withCredentials = true;
+  
+      xhr.addEventListener("readystatechange", function () {
+        if (this.readyState === 4) {
+          AsyncStorage.setItem("accessToken", this.responseText);
+          resolve(JSON.parse(this.responseText).access_token);
+        }
+      });
+  
+      xhr.open("POST", url);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  
+      xhr.send(data);
+    }
+  }
+  else{
+    throw new Error('Please use AppConfig class and config function to setup app configuration parameters');
   }
 });
 
@@ -94,8 +98,7 @@ export async function getCatalogue() {
           var cat = new Catalogue(new Array());
           var prods = new Array();
           prods = JSON.parse(this.responseText).products;
-          for(i=0; i<prods.length; i++)
-          {
+          for (i = 0; i < prods.length; i++) {
             var prod = new Product();
             prod = prods[i];
             cat.products.push(prod);
@@ -172,13 +175,12 @@ export async function getTransactions(cardId) {
         if (this.readyState === 4) {
           var transs = new Array();
           var transactionList = new TransactionList(new Array());
-         transs = JSON.parse(this.responseText).transactions;
-         for(x=0; x<transs.length; x++)
-         {
+          transs = JSON.parse(this.responseText).transactions;
+          for (x = 0; x < transs.length; x++) {
             var transaction = new Transaction();
             transaction = transs[x];
             transactionList.transactions.push(transaction);
-         }
+          }
           resolve(transactionList);
         }
       });
@@ -317,19 +319,18 @@ export async function getBrand() {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          var app = new Brand('','',new Array(),'');
+          var app = new Brand('', '', new Array(), '');
           app = JSON.parse(this.responseText).app;
           var locs = new Array();
           var locations = JSON.parse(this.responseText).app.locations;
-          for(i=0; i<locations.length;i++)
-          {
+          for (i = 0; i < locations.length; i++) {
             var location = new Location();
             location = locations[i];
             locs.push(location);
           }
           app.locations = locs;
           resolve(app);
-         // resolve(JSON.parse(this.responseText));
+          // resolve(JSON.parse(this.responseText));
         }
       });
 
@@ -344,8 +345,7 @@ export async function getBrand() {
 
 //create a new user
 export async function createProfile(user) {
-  if(user != null && user instanceof Profile)
-  {
+  if (user != null && user instanceof Profile) {
     const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
     return new Promise(async function (resolve, reject) {
       getAccessToken.then((value) => {
@@ -356,32 +356,69 @@ export async function createProfile(user) {
           JSON.parse(config).appId +
           EndPoints.users;
         const authorization = 'Bearer ' + accessToken;
-  
+
         const data = JSON.stringify(user);
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
-  
+
         xhr.addEventListener('readystatechange', function () {
           if (this.readyState === 4) {
             var profile = new Profile();
-              profile = JSON.parse(this.responseText).user;
-              resolve(profile);
+            profile = JSON.parse(this.responseText).user;
+            resolve(profile);
           }
         });
-  
+
         xhr.open('POST', url);
         xhr.setRequestHeader('Authorization', authorization);
         xhr.setRequestHeader('Content-Type', 'application/json');
-  
+
         xhr.send(data);
       });
     });
   }
-  else{
+  else {
     throw 'Please pass object of type Profile';
   }
-  
+
 }
+
+    //create an order
+    export async function createOrder(order) {
+      if (order != null && order instanceof Order)
+      {
+      var config =await AsyncStorage.getItem("waivpay_sdk_config_appId");
+      return  new Promise(async function(resolve, reject) {
+              getAccessToken.then((value) => {
+        var accessToken = value;
+        var url = EndPoints.host + EndPoints.appSpecific + JSON.parse(config).appId + EndPoints.orders;
+        var authorization = "Bearer " + accessToken;
+  
+        var data = JSON.stringify(order);
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+  
+        xhr.addEventListener("readystatechange", function () {
+          if (this.readyState === 4) {
+            var orderResponse = new OrderResponse();
+            orderResponse = JSON.parse(this.responseText)
+
+            resolve(orderResponse);
+          }
+        });
+  
+        xhr.open("POST", url);
+        xhr.setRequestHeader("Authorization", authorization);
+        xhr.setRequestHeader("Content-Type", "application/json");
+  
+        xhr.send(data);
+      });
+      });
+    }
+    else{
+      throw 'Please pass object of type Order';
+    }
+    }
 
 // get App Details
 export async function searchCards(mobile) {
@@ -406,13 +443,12 @@ export async function searchCards(mobile) {
           var cards = new Array();
           var cardList = new CardList(new Array());
           cards = JSON.parse(this.responseText).cards;
-          for(i=0; i<cards.length ; i++)
-          {
+          for (i = 0; i < cards.length; i++) {
             var card = new Card();
             card = cards[i];
             cardList.cards.push(card);
           }
-         resolve(cardList);
+          resolve(cardList);
         }
       });
 
@@ -446,8 +482,8 @@ export async function getProfile(userId) {
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           var profile = new Profile();
-                profile = JSON.parse(this.responseText).user;
-                resolve(profile);
+          profile = JSON.parse(this.responseText).user;
+          resolve(profile);
         }
       });
 
@@ -462,10 +498,8 @@ export async function getProfile(userId) {
 
 //update a user profile
 export async function updateProfile(user) {
-  if(user != null && user instanceof Profile)
-  {
-    if(user.id != 'undefined' && user.id != null)
-    {
+  if (user != null && user instanceof Profile) {
+    if (user.id != 'undefined' && user.id != null) {
       const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
       return new Promise(async function (resolve, reject) {
         getAccessToken.then((value) => {
@@ -476,11 +510,11 @@ export async function updateProfile(user) {
             JSON.parse(config).appId +
             EndPoints.users + "/" + user.id;
           const authorization = 'Bearer ' + accessToken;
-    
+
           const data = JSON.stringify(user);
           const xhr = new XMLHttpRequest();
           xhr.withCredentials = true;
-    
+
           xhr.addEventListener('readystatechange', function () {
             if (this.readyState === 4) {
               var profile = new Profile();
@@ -488,24 +522,24 @@ export async function updateProfile(user) {
               resolve(profile);
             }
           });
-    
+
           xhr.open('PUT', url);
           xhr.setRequestHeader('Authorization', authorization);
           xhr.setRequestHeader('Content-Type', 'application/json');
-    
+
           xhr.send(data);
         });
       });
     }
-    else{
+    else {
       throw 'Please provide an id for the user';
     }
   }
-  else{
+  else {
     throw 'Please pass object of type Profile';
 
   }
-  
+
 }
 
 /* ***********

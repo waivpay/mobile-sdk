@@ -1,5 +1,15 @@
 import { EndPoints, EndPointsCashBack } from './util/ServerEndPoints';
 import { AsyncStorage } from 'react-native';
+import {Product} from './Models/Product'
+import { Catalogue } from './Models/Catalogue';
+import {Brand} from './Models/Brand';
+import { Location } from './Models/Location';
+import { Balance } from "./models/Balance";
+import { Transaction } from './Models/Transaction';
+import { TransactionList } from './Models/TransactionList';
+import { CardList } from './Models/CardList';
+import { Card } from './Models/Card';
+import { Profile } from './Models/Profile';
 
 //sets client key,  client secret and appid in asyncstorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(clientId, clientSecret, appId) {
@@ -81,7 +91,16 @@ export async function getCatalogue() {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var cat = new Catalogue(new Array());
+          var prods = new Array();
+          prods = JSON.parse(this.responseText).products;
+          for(i=0; i<prods.length; i++)
+          {
+            var prod = new Product();
+            prod = prods[i];
+            cat.products.push(prod);
+          }
+          resolve(cat);
         }
       });
 
@@ -115,7 +134,9 @@ export async function getBalance(cardId) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var bal = new Balance();
+          bal = JSON.parse(this.responseText);
+          resolve(bal);
         }
       });
 
@@ -149,7 +170,16 @@ export async function getTransactions(cardId) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var transs = new Array();
+          var transactionList = new TransactionList(new Array());
+         transs = JSON.parse(this.responseText).transactions;
+         for(x=0; x<transs.length; x++)
+         {
+            var transaction = new Transaction();
+            transaction = transs[x];
+            transactionList.transactions.push(transaction);
+         }
+          resolve(transactionList);
         }
       });
 
@@ -182,7 +212,9 @@ export async function getCardDetails(cardId) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var card = new Card();
+          card = JSON.parse(this.responseText);
+          resolve(card);
         }
       });
 
@@ -272,11 +304,12 @@ export async function verifyTwoFactor(code) {
 }
 
 // get App Details
-export async function getApp(appId) {
+export async function getBrand() {
+  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
   return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
-      const url = EndPoints.host + EndPoints.appSpecific + appId;
+      const url = EndPoints.host + EndPoints.appSpecific + JSON.parse(config).appId;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
@@ -284,7 +317,19 @@ export async function getApp(appId) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var app = new Brand('','',new Array(),'');
+          app = JSON.parse(this.responseText).app;
+          var locs = new Array();
+          var locations = JSON.parse(this.responseText).app.locations;
+          for(i=0; i<locations.length;i++)
+          {
+            var location = new Location();
+            location = locations[i];
+            locs.push(location);
+          }
+          app.locations = locs;
+          resolve(app);
+         // resolve(JSON.parse(this.responseText));
         }
       });
 
@@ -299,34 +344,43 @@ export async function getApp(appId) {
 
 //create a new user
 export async function createProfile(user) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
-    getAccessToken.then((value) => {
-      const accessToken = value;
-      const url =
-        EndPoints.host +
-        EndPoints.appSpecific +
-        JSON.parse(config).appId +
-        EndPoints.users;
-      const authorization = 'Bearer ' + accessToken;
-
-      const data = JSON.stringify(user);
-      const xhr = new XMLHttpRequest();
-      xhr.withCredentials = true;
-
-      xhr.addEventListener('readystatechange', function () {
-        if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
-        }
+  if(user != null && user instanceof Profile)
+  {
+    const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
+    return new Promise(async function (resolve, reject) {
+      getAccessToken.then((value) => {
+        const accessToken = value;
+        const url =
+          EndPoints.host +
+          EndPoints.appSpecific +
+          JSON.parse(config).appId +
+          EndPoints.users;
+        const authorization = 'Bearer ' + accessToken;
+  
+        const data = JSON.stringify(user);
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+  
+        xhr.addEventListener('readystatechange', function () {
+          if (this.readyState === 4) {
+            var profile = new Profile();
+              profile = JSON.parse(this.responseText).user;
+              resolve(profile);
+          }
+        });
+  
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Authorization', authorization);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+  
+        xhr.send(data);
       });
-
-      xhr.open('POST', url);
-      xhr.setRequestHeader('Authorization', authorization);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-
-      xhr.send(data);
     });
-  });
+  }
+  else{
+    throw 'Please pass object of type Profile';
+  }
+  
 }
 
 // get App Details
@@ -349,7 +403,16 @@ export async function searchCards(mobile) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var cards = new Array();
+          var cardList = new CardList(new Array());
+          cards = JSON.parse(this.responseText).cards;
+          for(i=0; i<cards.length ; i++)
+          {
+            var card = new Card();
+            card = cards[i];
+            cardList.cards.push(card);
+          }
+         resolve(cardList);
         }
       });
 
@@ -382,7 +445,9 @@ export async function getProfile(userId) {
 
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
-          resolve(JSON.parse(this.responseText));
+          var profile = new Profile();
+                profile = JSON.parse(this.responseText).user;
+                resolve(profile);
         }
       });
 
@@ -397,35 +462,50 @@ export async function getProfile(userId) {
 
 //update a user profile
 export async function updateProfile(user) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
-    getAccessToken.then((value) => {
-      const accessToken = value;
-      const url =
-        EndPoints.host +
-        EndPoints.appSpecific +
-        JSON.parse(config).appId +
-        EndPoints.users;
-      const authorization = 'Bearer ' + accessToken;
-
-      const data = JSON.stringify(user);
-      const xhr = new XMLHttpRequest();
-      xhr.withCredentials = true;
-
-      xhr.addEventListener('readystatechange', function () {
-        if (this.readyState === 4) {
-          alert('User Created :' + this.responseText);
-          resolve(JSON.parse(this.responseText));
-        }
+  if(user != null && user instanceof Profile)
+  {
+    if(user.id != 'undefined' && user.id != null)
+    {
+      const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
+      return new Promise(async function (resolve, reject) {
+        getAccessToken.then((value) => {
+          const accessToken = value;
+          const url =
+            EndPoints.host +
+            EndPoints.appSpecific +
+            JSON.parse(config).appId +
+            EndPoints.users + "/" + user.id;
+          const authorization = 'Bearer ' + accessToken;
+    
+          const data = JSON.stringify(user);
+          const xhr = new XMLHttpRequest();
+          xhr.withCredentials = true;
+    
+          xhr.addEventListener('readystatechange', function () {
+            if (this.readyState === 4) {
+              var profile = new Profile();
+              profile = JSON.parse(this.responseText).user;
+              resolve(profile);
+            }
+          });
+    
+          xhr.open('PUT', url);
+          xhr.setRequestHeader('Authorization', authorization);
+          xhr.setRequestHeader('Content-Type', 'application/json');
+    
+          xhr.send(data);
+        });
       });
+    }
+    else{
+      throw 'Please provide an id for the user';
+    }
+  }
+  else{
+    throw 'Please pass object of type Profile';
 
-      xhr.open('POST', url);
-      xhr.setRequestHeader('Authorization', authorization);
-      xhr.setRequestHeader('Content-Type', 'application/json');
-
-      xhr.send(data);
-    });
-  });
+  }
+  
 }
 
 /* ***********

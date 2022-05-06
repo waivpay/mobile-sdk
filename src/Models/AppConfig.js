@@ -13,23 +13,5 @@ export class AppConfig {
     this.environment = environment;
   }
 
-  getHostEndPoints() {
-    if (this.environment == 'staging') {
-      return EndPoints.host_staging;
-    } else if (this.environment == 'prod') {
-      return EndPoints.host_prod;
-    } else {
-      return '';
-    }
-  }
 
-  getHostEndPointsCashback() {
-    if (this.environment == 'staging') {
-      return EndPointsCashBack.host_staging;
-    } else if (this.environment == 'prod') {
-      return EndPointsCashBack.host_prod;
-    } else {
-      return '';
-    }
-  }
 }

@@ -53,6 +53,26 @@ async function getConfig() {
   return appConfig;
 }
 
+ function getHostEndPoints(config) {
+      if (config.environment == 'staging') {
+        return EndPoints.host_staging;
+      } else if (config.environment == 'prod') {
+        return EndPoints.host_prod;
+      } else {
+        return '';
+      }
+    }
+
+   function getHostEndPointsCashback(config) {
+    if (config.environment == 'staging') {
+      return EndPointsCashBack.host_staging;
+    } else if (config.environment == 'prod') {
+      return EndPointsCashBack.host_prod;
+    } else {
+      return '';
+    }
+  }
+
 // function to get an access token by authenticating with Waivpay Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
 const getAccessToken = new Promise(async function (resolve, reject) {
@@ -68,7 +88,7 @@ const getAccessToken = new Promise(async function (resolve, reject) {
         resolve(accessToken_Obj.access_token);
       }
     } else {
-      const url = config.getHostEndPoints() + EndPoints.accessToken;
+      const url = getHostEndPoints(config) + EndPoints.accessToken;
       const data =
         'grant_type=client_credentials&' +
         'client_id=' +
@@ -105,7 +125,7 @@ export async function getCatalogue() {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.catalogue;
@@ -144,7 +164,7 @@ export async function getBalance(cardId) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.cards +
@@ -180,7 +200,7 @@ export async function getTransactions(cardId) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.cards +
@@ -222,7 +242,7 @@ export async function getCardDetails(cardId) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.cards +
@@ -256,7 +276,7 @@ export async function sendTwoFactor(mobile) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.sendTwoFactor;
@@ -296,7 +316,7 @@ export async function verifyTwoFactor(code) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.sendTwoFactor +
@@ -333,7 +353,7 @@ export async function getBrand() {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() + EndPoints.appSpecific + config.app_id;
+        getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
@@ -373,7 +393,7 @@ export async function createProfile(user) {
       getAccessToken.then((value) => {
         const accessToken = value;
         const url =
-          config.getHostEndPoints() +
+          getHostEndPoints(config) +
           EndPoints.appSpecific +
           config.app_id +
           EndPoints.users;
@@ -411,7 +431,7 @@ export async function createOrder(order) {
       getAccessToken.then((value) => {
         const accessToken = value;
         const url =
-          config.getHostEndPoints() +
+          getHostEndPoints(config) +
           EndPoints.appSpecific +
           config.app_id +
           EndPoints.orders;
@@ -449,7 +469,7 @@ export async function searchCards(mobile) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.cards +
@@ -490,7 +510,7 @@ export async function getProfile(userId) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPoints() +
+        getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.users +
@@ -527,7 +547,7 @@ export async function updateProfile(user) {
         getAccessToken.then((value) => {
           const accessToken = value;
           const url =
-            config.getHostEndPoints() +
+            getHostEndPoints(config) +
             EndPoints.appSpecific +
             config.app_id +
             EndPoints.users +
@@ -624,7 +644,7 @@ const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
     }
   } else {
     const url =
-      config.getHostEndPointsCashback() + EndPointsCashBack.accessToken;
+      getHostEndPointsCashback(config) + EndPointsCashBack.accessToken;
     const data =
       'grant_type=client_credentials&' +
       'client_id=' +
@@ -656,7 +676,7 @@ export async function listPromotions() {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPointsCashback() +
+        getHostEndPointsCashback(config) +
         EndPointsCashBack.orgSpecific +
         config.app_id +
         EndPointsCashBack.promotions;
@@ -687,7 +707,7 @@ export async function getPromotion(promotionId) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPointsCashback() +
+        getHostEndPointsCashback(config) +
         EndPointsCashBack.orgSpecific +
         config.app_id +
         EndPointsCashBack.promotions +
@@ -720,7 +740,7 @@ export async function createClaim(claim, promotionId) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPointsCashback() +
+        getHostEndPointsCashback(config) +
         EndPointsCashBack._api +
         EndPointsCashBack.promotions +
         '/' +
@@ -753,7 +773,7 @@ export async function getClaims(external_user_id) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPointsCashback() +
+        getHostEndPointsCashback(config) +
         EndPointsCashBack.api +
         EndPointsCashBack.claims +
         '?external_user_id=' +
@@ -785,7 +805,7 @@ export async function fileUpload(fileInput) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        config.getHostEndPointsCashback() +
+        getHostEndPointsCashback(config) +
         EndPointsCashBack.api +
         EndPointsCashBack.claims +
         EndPointsCashBack.fileUpload;

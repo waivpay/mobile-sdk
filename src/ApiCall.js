@@ -87,6 +87,9 @@ const getAccessToken = new Promise(async function (resolve, reject) {
       if (accessToken_Obj.access_token != null && expiresAt > new Date()) {
         resolve(accessToken_Obj.access_token);
       }
+      else{
+        reject();
+      }
     } else {
       const url = getHostEndPoints(config) + EndPoints.accessToken;
       const data =
@@ -103,6 +106,9 @@ const getAccessToken = new Promise(async function (resolve, reject) {
         if (this.readyState === 4) {
           AsyncStorage.setItem('accessToken', this.responseText);
           resolve(JSON.parse(this.responseText).access_token);
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -146,6 +152,9 @@ export async function getCatalogue() {
           }
           resolve(cat);
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('GET', url);
@@ -181,6 +190,9 @@ export async function getBalance(cardId) {
           let bal = new Balance();
           bal = JSON.parse(this.responseText);
           resolve(bal);
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -224,6 +236,9 @@ export async function getTransactions(cardId) {
           }
           resolve(transactionList);
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('GET', url);
@@ -258,6 +273,9 @@ export async function getCardDetails(cardId) {
           let card = new Card();
           card = JSON.parse(this.responseText);
           resolve(card);
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -295,6 +313,9 @@ export async function sendTwoFactor(mobile) {
           ).verification_id.toString();
           AsyncStorage.setItem('waivpay_sdk_verificationId', verification_id);
           resolve(JSON.parse(this.responseText));
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -335,6 +356,9 @@ export async function verifyTwoFactor(code) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('PUT', url);
@@ -372,7 +396,9 @@ export async function getBrand() {
           }
           app.locations = locs;
           resolve(app);
-          // resolve(JSON.parse(this.responseText));
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -408,6 +434,9 @@ export async function createProfile(user) {
             let profile = new Profile();
             profile = JSON.parse(this.responseText).user;
             resolve(profile);
+          }
+          else{
+            reject("Device not ready");
           }
         });
 
@@ -447,6 +476,9 @@ export async function createOrder(order) {
             orderResponse = JSON.parse(this.responseText);
 
             resolve(orderResponse);
+          }
+          else{
+            reject("Device not ready");
           }
         });
 
@@ -492,6 +524,9 @@ export async function searchCards(mobile) {
           }
           resolve(cardList);
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('GET', url);
@@ -526,6 +561,9 @@ export async function getProfile(userId) {
           let profile = new Profile();
           profile = JSON.parse(this.responseText).user;
           resolve(profile);
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -564,6 +602,9 @@ export async function updateProfile(user) {
               let profile = new Profile();
               profile = JSON.parse(this.responseText).user;
               resolve(profile);
+            }
+            else{
+              reject("Device not ready");
             }
           });
 
@@ -642,6 +683,9 @@ const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
     if (accessToken_Obj.access_token != null && expiresAt > new Date()) {
       resolve(accessToken_Obj.access_token);
     }
+    else{
+      reject();
+    }
   } else {
     const url =
       getHostEndPointsCashback(config) + EndPointsCashBack.accessToken;
@@ -659,6 +703,9 @@ const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
       if (this.readyState === 4) {
         AsyncStorage.setItem('accessToken_cashBack', this.responseText);
         resolve(JSON.parse(this.responseText).access_token);
+      }
+      else{
+        reject("Device not ready");
       }
     });
 
@@ -688,6 +735,9 @@ export async function listPromotions() {
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -722,6 +772,9 @@ export async function getPromotion(promotionId) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('GET', url);
@@ -755,6 +808,9 @@ export async function createClaim(claim, promotionId) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
+        else{
+          reject("Device not ready");
+        }
       });
 
       xhr.open('POST', url);
@@ -786,6 +842,9 @@ export async function getClaims(external_user_id) {
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
+        }
+        else{
+          reject("Device not ready");
         }
       });
 
@@ -820,6 +879,9 @@ export async function fileUpload(fileInput) {
       xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
+        }
+        else{
+          reject("Device not ready");
         }
       });
 

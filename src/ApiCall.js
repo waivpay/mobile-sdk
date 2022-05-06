@@ -3,7 +3,7 @@ import { Product } from './Models/Product';
 import { Catalogue } from './Models/Catalogue';
 import { Brand } from './Models/Brand';
 import { Location } from './Models/Location';
-import { Balance } from './models/Balance';
+import { Balance } from './Models/Balance';
 import { Transaction } from './Models/Transaction';
 import { TransactionList } from './Models/TransactionList';
 import { CardList } from './Models/CardList';
@@ -21,11 +21,21 @@ export async function setConfig(appConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
-    if (client_id != null && client_id !== 'undefined' && client_secret != null && client_secret !== 'undefined' && app_id != null && app_id !== 'undefined' && environment != null && environment !== 'undefined') {
+    if (
+      client_id != null &&
+      client_id !== 'undefined' &&
+      client_secret != null &&
+      client_secret !== 'undefined' &&
+      app_id != null &&
+      app_id !== 'undefined' &&
+      environment != null &&
+      environment !== 'undefined'
+    ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
       await AsyncStorage.setItem(
         'waivpay_sdk_config_app_id',
-        JSON.stringify(appConfig));
+        JSON.stringify(appConfig)
+      );
     } else {
       throw new Error('All parameters need to be passed to set config');
     }
@@ -45,7 +55,7 @@ async function getConfig() {
 
 // function to get an access token by authenticating with Waivpay Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
-const getAccessToken = new Promise(async function(resolve, reject) {
+const getAccessToken = new Promise(async function (resolve, reject) {
   const accessToken = await AsyncStorage.getItem('accessToken');
   const config = await getConfig();
   if (config != 'undefined' && config != null) {
@@ -59,12 +69,17 @@ const getAccessToken = new Promise(async function(resolve, reject) {
       }
     } else {
       const url = config.getHostEndPoints() + EndPoints.accessToken;
-      const data = 'grant_type=client_credentials&' + 'client_id=' + config.client_id + '&client_secret=' + config.client_secret;
+      const data =
+        'grant_type=client_credentials&' +
+        'client_id=' +
+        config.client_id +
+        '&client_secret=' +
+        config.client_secret;
 
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           AsyncStorage.setItem('accessToken', this.responseText);
           resolve(JSON.parse(this.responseText).access_token);
@@ -86,7 +101,7 @@ const getAccessToken = new Promise(async function(resolve, reject) {
 // get catalogue
 export async function getCatalogue() {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -99,7 +114,7 @@ export async function getCatalogue() {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           const cat = new Catalogue([]);
           let prods = [];
@@ -125,7 +140,7 @@ export async function getCatalogue() {
 // get balance
 export async function getBalance(cardId) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -141,7 +156,7 @@ export async function getBalance(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let bal = new Balance();
           bal = JSON.parse(this.responseText);
@@ -161,7 +176,7 @@ export async function getBalance(cardId) {
 // get transactions
 export async function getTransactions(cardId) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -177,7 +192,7 @@ export async function getTransactions(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let transs = [];
           let transactionList = new TransactionList([]);
@@ -203,7 +218,7 @@ export async function getTransactions(cardId) {
 // get cardDetails
 export async function getCardDetails(cardId) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -218,7 +233,7 @@ export async function getCardDetails(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let card = new Card();
           card = JSON.parse(this.responseText);
@@ -237,7 +252,7 @@ export async function getCardDetails(cardId) {
 
 export async function sendTwoFactor(mobile) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -253,10 +268,10 @@ export async function sendTwoFactor(mobile) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           const verification_id = JSON.parse(
-            this.responseText,
+            this.responseText
           ).verification_id.toString();
           AsyncStorage.setItem('waivpay_sdk_verificationId', verification_id);
           resolve(JSON.parse(this.responseText));
@@ -275,9 +290,9 @@ export async function sendTwoFactor(mobile) {
 export async function verifyTwoFactor(code) {
   const config = await getConfig();
   const verificationId = await AsyncStorage.getItem(
-    'waivpay_sdk_verificationId',
+    'waivpay_sdk_verificationId'
   );
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -296,7 +311,7 @@ export async function verifyTwoFactor(code) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -314,16 +329,17 @@ export async function verifyTwoFactor(code) {
 // get App Details
 export async function getBrand() {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
-      const url = config.getHostEndPoints() + EndPoints.appSpecific + config.app_id;
+      const url =
+        config.getHostEndPoints() + EndPoints.appSpecific + config.app_id;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let app = new Brand('', '', [], '');
           app = JSON.parse(this.responseText).app;
@@ -353,7 +369,7 @@ export async function getBrand() {
 export async function createProfile(user) {
   if (user != null && user instanceof Profile) {
     const config = await getConfig();
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       getAccessToken.then((value) => {
         const accessToken = value;
         const url =
@@ -367,7 +383,7 @@ export async function createProfile(user) {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
-        xhr.addEventListener('readystatechange', function() {
+        xhr.addEventListener('readystatechange', function () {
           if (this.readyState === 4) {
             let profile = new Profile();
             profile = JSON.parse(this.responseText).user;
@@ -385,24 +401,27 @@ export async function createProfile(user) {
   } else {
     throw 'Please pass object of type Profile';
   }
-
 }
 
 //create an order
 export async function createOrder(order) {
   if (order != null && order instanceof Order) {
     const config = await getConfig();
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       getAccessToken.then((value) => {
         const accessToken = value;
-        const url = config.getHostEndPoints() + EndPoints.appSpecific + config.app_id + EndPoints.orders;
+        const url =
+          config.getHostEndPoints() +
+          EndPoints.appSpecific +
+          config.app_id +
+          EndPoints.orders;
         const authorization = 'Bearer ' + accessToken;
 
         const data = JSON.stringify(order);
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
-        xhr.addEventListener('readystatechange', function() {
+        xhr.addEventListener('readystatechange', function () {
           if (this.readyState === 4) {
             let orderResponse = new OrderResponse();
             orderResponse = JSON.parse(this.responseText);
@@ -426,7 +445,7 @@ export async function createOrder(order) {
 // get App Details
 export async function searchCards(mobile) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -441,7 +460,7 @@ export async function searchCards(mobile) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let cards = [];
           const cardList = new CardList([]);
@@ -467,7 +486,7 @@ export async function searchCards(mobile) {
 // get User Profile
 export async function getProfile(userId) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
@@ -482,7 +501,7 @@ export async function getProfile(userId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           let profile = new Profile();
           profile = JSON.parse(this.responseText).user;
@@ -504,21 +523,23 @@ export async function updateProfile(user) {
   if (user != null && user instanceof Profile) {
     if (user.id != 'undefined' && user.id != null) {
       const config = await getConfig();
-      return new Promise(async function(resolve, reject) {
+      return new Promise(async function (resolve, reject) {
         getAccessToken.then((value) => {
           const accessToken = value;
           const url =
             config.getHostEndPoints() +
             EndPoints.appSpecific +
             config.app_id +
-            EndPoints.users + '/' + user.id;
+            EndPoints.users +
+            '/' +
+            user.id;
           const authorization = 'Bearer ' + accessToken;
 
           const data = JSON.stringify(user);
           const xhr = new XMLHttpRequest();
           xhr.withCredentials = true;
 
-          xhr.addEventListener('readystatechange', function() {
+          xhr.addEventListener('readystatechange', function () {
             if (this.readyState === 4) {
               let profile = new Profile();
               profile = JSON.parse(this.responseText).user;
@@ -554,11 +575,21 @@ export async function setConfigCashBack(appConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
-    if (client_id != null && client_id !== 'undefined' && client_secret != null && client_secret !== 'undefined' && app_id != null && app_id !== 'undefined' && environment != null && environment !== 'undefined') {
+    if (
+      client_id != null &&
+      client_id !== 'undefined' &&
+      client_secret != null &&
+      client_secret !== 'undefined' &&
+      app_id != null &&
+      app_id !== 'undefined' &&
+      environment != null &&
+      environment !== 'undefined'
+    ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
       await AsyncStorage.setItem(
         'waivpay_sdk_config_cashback_app_id',
-        JSON.stringify(appConfig));
+        JSON.stringify(appConfig)
+      );
     } else {
       throw new Error('All parameters need to be passed to set config');
     }
@@ -571,14 +602,16 @@ export async function setConfigCashBack(appConfig) {
 
 async function getConfigCashBack() {
   let appConfig = new AppConfig();
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_cashback_app_id');
+  const config = await AsyncStorage.getItem(
+    'waivpay_sdk_config_cashback_app_id'
+  );
   appConfig = JSON.parse(config);
   return appConfig;
 }
 
 // function to get an access token by authenticating with CashBack Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
-const getAccessTokenCashBack = new Promise(async function(resolve, reject) {
+const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
   const accessToken = await AsyncStorage.getItem('accessToken_cashBack');
   const config = await getConfigCashBack();
   if (typeof accessToken !== 'undefined' && accessToken != null) {
@@ -590,7 +623,8 @@ const getAccessTokenCashBack = new Promise(async function(resolve, reject) {
       resolve(accessToken_Obj.access_token);
     }
   } else {
-    const url = config.getHostEndPointsCashback() + EndPointsCashBack.accessToken;
+    const url =
+      config.getHostEndPointsCashback() + EndPointsCashBack.accessToken;
     const data =
       'grant_type=client_credentials&' +
       'client_id=' +
@@ -601,7 +635,7 @@ const getAccessTokenCashBack = new Promise(async function(resolve, reject) {
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
 
-    xhr.addEventListener('readystatechange', function() {
+    xhr.addEventListener('readystatechange', function () {
       if (this.readyState === 4) {
         AsyncStorage.setItem('accessToken_cashBack', this.responseText);
         resolve(JSON.parse(this.responseText).access_token);
@@ -618,7 +652,7 @@ const getAccessTokenCashBack = new Promise(async function(resolve, reject) {
 // list Promotions
 export async function listPromotions() {
   const config = await getConfigCashBack();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
@@ -631,7 +665,7 @@ export async function listPromotions() {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -649,7 +683,7 @@ export async function listPromotions() {
 // get Promotion
 export async function getPromotion(promotionId) {
   const config = await getConfigCashBack();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
@@ -664,7 +698,7 @@ export async function getPromotion(promotionId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -682,7 +716,7 @@ export async function getPromotion(promotionId) {
 //create claim
 export async function createClaim(claim, promotionId) {
   const config = await getConfigCashBack();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
@@ -697,7 +731,7 @@ export async function createClaim(claim, promotionId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -715,7 +749,7 @@ export async function createClaim(claim, promotionId) {
 // get claims for user
 export async function getClaims(external_user_id) {
   const config = await getConfigCashBack();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
@@ -729,7 +763,7 @@ export async function getClaims(external_user_id) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -747,7 +781,7 @@ export async function getClaims(external_user_id) {
 // file Upload
 export async function fileUpload(fileInput) {
   const config = await getConfigCashBack();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
@@ -763,7 +797,7 @@ export async function fileUpload(fileInput) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function() {
+      xhr.addEventListener('readystatechange', function () {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }

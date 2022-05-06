@@ -1,10 +1,9 @@
 import { EndPoints, EndPointsCashBack } from './util/ServerEndPoints';
-import { AsyncStorage } from 'react-native';
-import { Product } from './Models/Product'
+import { Product } from './Models/Product';
 import { Catalogue } from './Models/Catalogue';
 import { Brand } from './Models/Brand';
 import { Location } from './Models/Location';
-import { Balance } from "./models/Balance";
+import { Balance } from './models/Balance';
 import { Transaction } from './Models/Transaction';
 import { TransactionList } from './Models/TransactionList';
 import { CardList } from './Models/CardList';
@@ -12,94 +11,101 @@ import { Card } from './Models/Card';
 import { Profile } from './Models/Profile';
 import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
-import { OrderItem } from './Models/OrderItem';
-import { RecipientAddress } from './Models/RecipientAddress';
-import { BillingAddress } from './Models/BillingAddress';
 import { OrderResponse } from './Models/OrderResponse';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-//sets client key,  client secret and appid in asyncstorage, to be used in subsequent api calls tp Waivpay
-export async function setConfig(clientId, clientSecret, appId) {
+//sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
+export async function setConfig(appConfig) {
   if (appConfig != null && appConfig instanceof AppConfig) {
-    var clientId = appConfig.clientId;
-    var clientSecret = appConfig.clientSecret;
-    var appId = appConfig.appId;
-    if (clientId != null && clientId !== 'undefined' && clientSecret != null && clientSecret !== 'undefined' && appId != null && appId !== 'undefined') {
-      await AsyncStorage.setItem("waivpay_sdk_config_appId", JSON.stringify({ "client_id": clientId, "client_secret": clientSecret, "appId": appId }));
-    }
-    else {
+    const client_id = appConfig.client_id;
+    const client_secret = appConfig.client_secret;
+    const app_id = appConfig.app_id;
+    const environment = appConfig.environment;
+    if (client_id != null && client_id !== 'undefined' && client_secret != null && client_secret !== 'undefined' && app_id != null && app_id !== 'undefined' && environment != null && environment !== 'undefined') {
+      appConfig = new AppConfig(client_id, client_secret, app_id, environment);
+      await AsyncStorage.setItem(
+        'waivpay_sdk_config_app_id',
+        JSON.stringify(appConfig));
+    } else {
       throw new Error('All parameters need to be passed to set config');
     }
+  } else {
+    throw new Error(
+      'Please use AppConfig class to pass app configuration parameters'
+    );
   }
-  else {
-    throw new Error('Please use AppConfig class to pass app configuration parameters');
-  }
+}
+
+async function getConfig() {
+  let appConfig = new AppConfig();
+  const config = await AsyncStorage.getItem('waivpay_sdk_config_app_id');
+  appConfig = JSON.parse(config);
+  return appConfig;
 }
 
 // function to get an access token by authenticating with Waivpay Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
-const getAccessToken = new Promise(async function (resolve, reject) {
-  var accessToken = await AsyncStorage.getItem("accessToken");
-  var config =await AsyncStorage.getItem("waivpay_sdk_config_appId");
-  if(config != 'undefined' && config != null)
-  {
-    if(typeof accessToken !== 'undefined' && accessToken != null)
-    {
-    var accessToken_Obj = JSON.parse(accessToken);
-    var createdTime = accessToken_Obj.created_at + 6000;
-    var expiresAt = new Date(0); // The 0 there is the key, which sets the date to the epoch
-    expiresAt.setUTCSeconds(createdTime);
-    if (accessToken_Obj.access_token != null && expiresAt > new Date()) {
-      resolve(accessToken_Obj.access_token);
-    }
-    }
-    else {
-      var url = EndPoints.host + EndPoints.accessToken;
-      var data = "grant_type=client_credentials&" + "client_id=" + JSON.parse(config).client_id + "&client_secret=" + JSON.parse(config).client_secret;
-  
-      var xhr = new XMLHttpRequest();
+const getAccessToken = new Promise(async function(resolve, reject) {
+  const accessToken = await AsyncStorage.getItem('accessToken');
+  const config = await getConfig();
+  if (config != 'undefined' && config != null) {
+    if (typeof accessToken !== 'undefined' && accessToken != null) {
+      const accessToken_Obj = JSON.parse(accessToken);
+      const createdTime = accessToken_Obj.created_at + 6000;
+      const expiresAt = new Date(0); // The 0 there is the key, which sets the date to the epoch
+      expiresAt.setUTCSeconds(createdTime);
+      if (accessToken_Obj.access_token != null && expiresAt > new Date()) {
+        resolve(accessToken_Obj.access_token);
+      }
+    } else {
+      const url = config.getHostEndPoints() + EndPoints.accessToken;
+      const data = 'grant_type=client_credentials&' + 'client_id=' + config.client_id + '&client_secret=' + config.client_secret;
+
+      const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
-  
-      xhr.addEventListener("readystatechange", function () {
+
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          AsyncStorage.setItem("accessToken", this.responseText);
+          AsyncStorage.setItem('accessToken', this.responseText);
           resolve(JSON.parse(this.responseText).access_token);
         }
       });
-  
-      xhr.open("POST", url);
-      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-  
+
+      xhr.open('POST', url);
+      xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
       xhr.send(data);
     }
-  }
-  else{
-    throw new Error('Please use AppConfig class and config function to setup app configuration parameters');
+  } else {
+    throw new Error(
+      'Please use AppConfig class and config function to setup app configuration parameters'
+    );
   }
 });
 
 // get catalogue
 export async function getCatalogue() {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.catalogue;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var cat = new Catalogue(new Array());
-          var prods = new Array();
+          const cat = new Catalogue([]);
+          let prods = [];
           prods = JSON.parse(this.responseText).products;
-          for (i = 0; i < prods.length; i++) {
-            var prod = new Product();
+          for (let i = 0; i < prods.length; i++) {
+            let prod = new Product();
             prod = prods[i];
             cat.products.push(prod);
           }
@@ -118,14 +124,14 @@ export async function getCatalogue() {
 
 // get balance
 export async function getBalance(cardId) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.cards +
         '/' +
         cardId +
@@ -135,9 +141,9 @@ export async function getBalance(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var bal = new Balance();
+          let bal = new Balance();
           bal = JSON.parse(this.responseText);
           resolve(bal);
         }
@@ -154,14 +160,14 @@ export async function getBalance(cardId) {
 
 // get transactions
 export async function getTransactions(cardId) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.cards +
         '/' +
         cardId +
@@ -171,13 +177,13 @@ export async function getTransactions(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var transs = new Array();
-          var transactionList = new TransactionList(new Array());
+          let transs = [];
+          let transactionList = new TransactionList([]);
           transs = JSON.parse(this.responseText).transactions;
-          for (x = 0; x < transs.length; x++) {
-            var transaction = new Transaction();
+          for (let x = 0; x < transs.length; x++) {
+            let transaction = new Transaction();
             transaction = transs[x];
             transactionList.transactions.push(transaction);
           }
@@ -196,14 +202,14 @@ export async function getTransactions(cardId) {
 
 // get cardDetails
 export async function getCardDetails(cardId) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.cards +
         '/' +
         cardId;
@@ -212,9 +218,9 @@ export async function getCardDetails(cardId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var card = new Card();
+          let card = new Card();
           card = JSON.parse(this.responseText);
           resolve(card);
         }
@@ -230,14 +236,14 @@ export async function getCardDetails(cardId) {
 }
 
 export async function sendTwoFactor(mobile) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.sendTwoFactor;
       const authorization = 'Bearer ' + accessToken;
 
@@ -247,10 +253,10 @@ export async function sendTwoFactor(mobile) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
           const verification_id = JSON.parse(
-            this.responseText
+            this.responseText,
           ).verification_id.toString();
           AsyncStorage.setItem('waivpay_sdk_verificationId', verification_id);
           resolve(JSON.parse(this.responseText));
@@ -267,17 +273,17 @@ export async function sendTwoFactor(mobile) {
 }
 
 export async function verifyTwoFactor(code) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
+  const config = await getConfig();
   const verificationId = await AsyncStorage.getItem(
-    'waivpay_sdk_verificationId'
+    'waivpay_sdk_verificationId',
   );
-  return new Promise(async function (resolve, reject) {
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.sendTwoFactor +
         '/' +
         verificationId;
@@ -290,7 +296,7 @@ export async function verifyTwoFactor(code) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
@@ -307,24 +313,24 @@ export async function verifyTwoFactor(code) {
 
 // get App Details
 export async function getBrand() {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
-      const url = EndPoints.host + EndPoints.appSpecific + JSON.parse(config).appId;
+      const url = config.getHostEndPoints() + EndPoints.appSpecific + config.app_id;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var app = new Brand('', '', new Array(), '');
+          let app = new Brand('', '', [], '');
           app = JSON.parse(this.responseText).app;
-          var locs = new Array();
-          var locations = JSON.parse(this.responseText).app.locations;
-          for (i = 0; i < locations.length; i++) {
-            var location = new Location();
+          const locs = [];
+          const locations = JSON.parse(this.responseText).app.locations;
+          for (let i = 0; i < locations.length; i++) {
+            let location = new Location();
             location = locations[i];
             locs.push(location);
           }
@@ -346,14 +352,14 @@ export async function getBrand() {
 //create a new user
 export async function createProfile(user) {
   if (user != null && user instanceof Profile) {
-    const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-    return new Promise(async function (resolve, reject) {
+    const config = await getConfig();
+    return new Promise(async function(resolve, reject) {
       getAccessToken.then((value) => {
         const accessToken = value;
         const url =
-          EndPoints.host +
+          config.getHostEndPoints() +
           EndPoints.appSpecific +
-          JSON.parse(config).appId +
+          config.app_id +
           EndPoints.users;
         const authorization = 'Bearer ' + accessToken;
 
@@ -361,9 +367,9 @@ export async function createProfile(user) {
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
-        xhr.addEventListener('readystatechange', function () {
+        xhr.addEventListener('readystatechange', function() {
           if (this.readyState === 4) {
-            var profile = new Profile();
+            let profile = new Profile();
             profile = JSON.parse(this.responseText).user;
             resolve(profile);
           }
@@ -376,60 +382,57 @@ export async function createProfile(user) {
         xhr.send(data);
       });
     });
-  }
-  else {
+  } else {
     throw 'Please pass object of type Profile';
   }
 
 }
 
-    //create an order
-    export async function createOrder(order) {
-      if (order != null && order instanceof Order)
-      {
-      var config =await AsyncStorage.getItem("waivpay_sdk_config_appId");
-      return  new Promise(async function(resolve, reject) {
-              getAccessToken.then((value) => {
-        var accessToken = value;
-        var url = EndPoints.host + EndPoints.appSpecific + JSON.parse(config).appId + EndPoints.orders;
-        var authorization = "Bearer " + accessToken;
-  
-        var data = JSON.stringify(order);
-        var xhr = new XMLHttpRequest();
+//create an order
+export async function createOrder(order) {
+  if (order != null && order instanceof Order) {
+    const config = await getConfig();
+    return new Promise(async function(resolve, reject) {
+      getAccessToken.then((value) => {
+        const accessToken = value;
+        const url = config.getHostEndPoints() + EndPoints.appSpecific + config.app_id + EndPoints.orders;
+        const authorization = 'Bearer ' + accessToken;
+
+        const data = JSON.stringify(order);
+        const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
-  
-        xhr.addEventListener("readystatechange", function () {
+
+        xhr.addEventListener('readystatechange', function() {
           if (this.readyState === 4) {
-            var orderResponse = new OrderResponse();
-            orderResponse = JSON.parse(this.responseText)
+            let orderResponse = new OrderResponse();
+            orderResponse = JSON.parse(this.responseText);
 
             resolve(orderResponse);
           }
         });
-  
-        xhr.open("POST", url);
-        xhr.setRequestHeader("Authorization", authorization);
-        xhr.setRequestHeader("Content-Type", "application/json");
-  
+
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Authorization', authorization);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
         xhr.send(data);
       });
-      });
-    }
-    else{
-      throw 'Please pass object of type Order';
-    }
-    }
+    });
+  } else {
+    throw 'Please pass object of type Order';
+  }
+}
 
 // get App Details
 export async function searchCards(mobile) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.cards +
         '?mobile_number=' +
         mobile;
@@ -438,13 +441,13 @@ export async function searchCards(mobile) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var cards = new Array();
-          var cardList = new CardList(new Array());
+          let cards = [];
+          const cardList = new CardList([]);
           cards = JSON.parse(this.responseText).cards;
-          for (i = 0; i < cards.length; i++) {
-            var card = new Card();
+          for (let i = 0; i < cards.length; i++) {
+            let card = new Card();
             card = cards[i];
             cardList.cards.push(card);
           }
@@ -463,14 +466,14 @@ export async function searchCards(mobile) {
 
 // get User Profile
 export async function getProfile(userId) {
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfig();
+  return new Promise(async function(resolve, reject) {
     getAccessToken.then((value) => {
       const accessToken = value;
       const url =
-        EndPoints.host +
+        config.getHostEndPoints() +
         EndPoints.appSpecific +
-        JSON.parse(config).appId +
+        config.app_id +
         EndPoints.users +
         '/' +
         userId;
@@ -479,9 +482,9 @@ export async function getProfile(userId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          var profile = new Profile();
+          let profile = new Profile();
           profile = JSON.parse(this.responseText).user;
           resolve(profile);
         }
@@ -500,24 +503,24 @@ export async function getProfile(userId) {
 export async function updateProfile(user) {
   if (user != null && user instanceof Profile) {
     if (user.id != 'undefined' && user.id != null) {
-      const config = await AsyncStorage.getItem('waivpay_sdk_config_appId');
-      return new Promise(async function (resolve, reject) {
+      const config = await getConfig();
+      return new Promise(async function(resolve, reject) {
         getAccessToken.then((value) => {
           const accessToken = value;
           const url =
-            EndPoints.host +
+            config.getHostEndPoints() +
             EndPoints.appSpecific +
-            JSON.parse(config).appId +
-            EndPoints.users + "/" + user.id;
+            config.app_id +
+            EndPoints.users + '/' + user.id;
           const authorization = 'Bearer ' + accessToken;
 
           const data = JSON.stringify(user);
           const xhr = new XMLHttpRequest();
           xhr.withCredentials = true;
 
-          xhr.addEventListener('readystatechange', function () {
+          xhr.addEventListener('readystatechange', function() {
             if (this.readyState === 4) {
-              var profile = new Profile();
+              let profile = new Profile();
               profile = JSON.parse(this.responseText).user;
               resolve(profile);
             }
@@ -530,16 +533,12 @@ export async function updateProfile(user) {
           xhr.send(data);
         });
       });
-    }
-    else {
+    } else {
       throw 'Please provide an id for the user';
     }
-  }
-  else {
+  } else {
     throw 'Please pass object of type Profile';
-
   }
-
 }
 
 /* ***********
@@ -548,34 +547,40 @@ CashBack Api calls
 
 ************* */
 
-//sets client key,  client secret and appid in asyncstorage, to be used in subsequent api calls tp Waivpay
-export async function setConfigCashBack(clientId, clientSecret, orgId) {
-  if (
-    clientId != null &&
-    clientId !== 'undefined' &&
-    clientSecret != null &&
-    clientSecret !== 'undefined' &&
-    orgId != null &&
-    orgId !== 'undefined'
-  ) {
-    await AsyncStorage.setItem(
-      'cashback_config',
-      JSON.stringify({
-        client_id: clientId,
-        client_secret: clientSecret,
-        orgId: orgId,
-      })
-    );
+//sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
+export async function setConfigCashBack(appConfig) {
+  if (appConfig != null && appConfig instanceof AppConfig) {
+    const client_id = appConfig.client_id;
+    const client_secret = appConfig.client_secret;
+    const app_id = appConfig.app_id;
+    const environment = appConfig.environment;
+    if (client_id != null && client_id !== 'undefined' && client_secret != null && client_secret !== 'undefined' && app_id != null && app_id !== 'undefined' && environment != null && environment !== 'undefined') {
+      appConfig = new AppConfig(client_id, client_secret, app_id, environment);
+      await AsyncStorage.setItem(
+        'waivpay_sdk_config_cashback_app_id',
+        JSON.stringify(appConfig));
+    } else {
+      throw new Error('All parameters need to be passed to set config');
+    }
   } else {
-    throw new Error('All parameters need to be passed to set config');
+    throw new Error(
+      'Please use AppConfig class to pass app configuration parameters'
+    );
   }
+}
+
+async function getConfigCashBack() {
+  let appConfig = new AppConfig();
+  const config = await AsyncStorage.getItem('waivpay_sdk_config_cashback_app_id');
+  appConfig = JSON.parse(config);
+  return appConfig;
 }
 
 // function to get an access token by authenticating with CashBack Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
-const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
+const getAccessTokenCashBack = new Promise(async function(resolve, reject) {
   const accessToken = await AsyncStorage.getItem('accessToken_cashBack');
-  const config = await AsyncStorage.getItem('cashback_config');
+  const config = await getConfigCashBack();
   if (typeof accessToken !== 'undefined' && accessToken != null) {
     const accessToken_Obj = JSON.parse(accessToken);
     const createdTime = accessToken_Obj.created_at + 6000;
@@ -585,18 +590,18 @@ const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
       resolve(accessToken_Obj.access_token);
     }
   } else {
-    const url = EndPointsCashBack.host + EndPointsCashBack.accessToken;
+    const url = config.getHostEndPointsCashback() + EndPointsCashBack.accessToken;
     const data =
       'grant_type=client_credentials&' +
       'client_id=' +
-      JSON.parse(config).client_id +
+      config.client_id +
       '&client_secret=' +
-      JSON.parse(config).client_secret;
+      config.client_secret;
 
     const xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
 
-    xhr.addEventListener('readystatechange', function () {
+    xhr.addEventListener('readystatechange', function() {
       if (this.readyState === 4) {
         AsyncStorage.setItem('accessToken_cashBack', this.responseText);
         resolve(JSON.parse(this.responseText).access_token);
@@ -611,23 +616,23 @@ const getAccessTokenCashBack = new Promise(async function (resolve, reject) {
 });
 
 // list Promotions
-export async function listPromotions(orgId) {
-  return new Promise(async function (resolve, reject) {
+export async function listPromotions() {
+  const config = await getConfigCashBack();
+  return new Promise(async function(resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        EndPointsCashBack.host +
+        config.getHostEndPointsCashback() +
         EndPointsCashBack.orgSpecific +
-        orgId +
+        config.app_id +
         EndPointsCashBack.promotions;
       const authorization = 'Bearer ' + accessToken;
 
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          alert('List of Promotions :' + this.responseText);
           resolve(JSON.parse(this.responseText));
         }
       });
@@ -643,14 +648,14 @@ export async function listPromotions(orgId) {
 
 // get Promotion
 export async function getPromotion(promotionId) {
-  const config = await AsyncStorage.getItem('cashback_config');
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfigCashBack();
+  return new Promise(async function(resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        EndPointsCashBack.host +
+        config.getHostEndPointsCashback() +
         EndPointsCashBack.orgSpecific +
-        JSON.parse(config).orgId +
+        config.app_id +
         EndPointsCashBack.promotions +
         '/' +
         promotionId;
@@ -659,9 +664,8 @@ export async function getPromotion(promotionId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          alert('Promotion Details :' + this.responseText);
           resolve(JSON.parse(this.responseText));
         }
       });
@@ -677,11 +681,12 @@ export async function getPromotion(promotionId) {
 
 //create claim
 export async function createClaim(claim, promotionId) {
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfigCashBack();
+  return new Promise(async function(resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        EndPointsCashBack.host +
+        config.getHostEndPointsCashback() +
         EndPointsCashBack._api +
         EndPointsCashBack.promotions +
         '/' +
@@ -692,9 +697,8 @@ export async function createClaim(claim, promotionId) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          alert('Claim Created :' + this.responseText);
           resolve(JSON.parse(this.responseText));
         }
       });
@@ -710,11 +714,12 @@ export async function createClaim(claim, promotionId) {
 
 // get claims for user
 export async function getClaims(external_user_id) {
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfigCashBack();
+  return new Promise(async function(resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        EndPointsCashBack.host +
+        config.getHostEndPointsCashback() +
         EndPointsCashBack.api +
         EndPointsCashBack.claims +
         '?external_user_id=' +
@@ -724,9 +729,8 @@ export async function getClaims(external_user_id) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          alert('Claims for the user :' + this.responseText);
           resolve(JSON.parse(this.responseText));
         }
       });
@@ -742,11 +746,12 @@ export async function getClaims(external_user_id) {
 
 // file Upload
 export async function fileUpload(fileInput) {
-  return new Promise(async function (resolve, reject) {
+  const config = await getConfigCashBack();
+  return new Promise(async function(resolve, reject) {
     getAccessTokenCashBack.then((value) => {
       const accessToken = value;
       const url =
-        EndPointsCashBack.host +
+        config.getHostEndPointsCashback() +
         EndPointsCashBack.api +
         EndPointsCashBack.claims +
         EndPointsCashBack.fileUpload;
@@ -758,9 +763,8 @@ export async function fileUpload(fileInput) {
       const xhr = new XMLHttpRequest();
       xhr.withCredentials = true;
 
-      xhr.addEventListener('readystatechange', function () {
+      xhr.addEventListener('readystatechange', function() {
         if (this.readyState === 4) {
-          alert('Claims for the user :' + this.responseText);
           resolve(JSON.parse(this.responseText));
         }
       });

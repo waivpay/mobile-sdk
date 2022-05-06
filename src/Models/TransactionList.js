@@ -1,7 +1,7 @@
 export class TransactionList {
-    transactions = new Array();
+  transactions = new Array();
 
-     constructor(transactions) { 
-        this.transactions = transactions;
-      }
-   }
+  constructor(transactions) {
+    this.transactions = transactions;
+  }
+}

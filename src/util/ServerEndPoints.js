@@ -1,5 +1,6 @@
 export const EndPoints = {
-  host: 'https://webstores-staging.herokuapp.com',
+  host_staging: 'https://webstores-staging.herokuapp.com',
+  host_prod: 'https://webstores.herokuapp.com',
   accessToken: '/oauth/token',
   appSpecific: '/api/apps/',
   getVerificationCode: '/verifications',
@@ -14,7 +15,8 @@ export const EndPoints = {
 };
 
 export const EndPointsCashBack = {
-  host: 'https://cashback-engine-staging.herokuapp.com',
+  host_staging: 'https://cashback-engine-staging.herokuapp.com',
+  host_prod: 'https://cashback-engine.herokuapp.com',
   accessToken: '/oauth/token',
   api: '/api/',
   _api: '/api',
@@ -22,13 +24,4 @@ export const EndPointsCashBack = {
   promotions: '/promotions',
   claims: '/claims',
   fileUpload: '/fileuploads',
-};
-
-export const Creds = {
-  client_id: 'QKacTTUWmMR-Jw_NxCY-0TwRfo2oUeZLw_gI5jtWnFU',
-  client_secret: 'Mdw5gmPZqxUYDcN5SBV70L1S4D9mQFcYgufuvNvkqrk',
-};
-
-export const App = {
-  app_id: 1,
 };

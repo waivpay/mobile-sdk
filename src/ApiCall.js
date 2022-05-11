@@ -88,7 +88,31 @@ const getAccessToken = new Promise(async function (resolve, reject) {
         resolve(accessToken_Obj.access_token);
       }
       else{
-        reject();
+        const url = getHostEndPoints(config) + EndPoints.accessToken;
+        const data =
+          'grant_type=client_credentials&' +
+          'client_id=' +
+          config.client_id +
+          '&client_secret=' +
+          config.client_secret;
+
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener('readystatechange', function () {
+          if (this.readyState === 4) {
+            AsyncStorage.setItem('accessToken', this.responseText);
+            resolve(JSON.parse(this.responseText).access_token);
+          }
+          else {
+            reject("Device not ready");
+          }
+        });
+
+        xhr.open('POST', url);
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.send(data);
       }
     } else {
       const url = getHostEndPoints(config) + EndPoints.accessToken;
@@ -152,7 +176,7 @@ export async function getCatalogue() {
           }
           resolve(cat);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -191,7 +215,7 @@ export async function getBalance(cardId) {
           bal = JSON.parse(this.responseText);
           resolve(bal);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -236,7 +260,7 @@ export async function getTransactions(cardId) {
           }
           resolve(transactionList);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -274,7 +298,7 @@ export async function getCardDetails(cardId) {
           card = JSON.parse(this.responseText);
           resolve(card);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -314,7 +338,7 @@ export async function sendTwoFactor(mobile) {
           AsyncStorage.setItem('waivpay_sdk_verificationId', verification_id);
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -356,7 +380,7 @@ export async function verifyTwoFactor(code) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -397,7 +421,7 @@ export async function getBrand() {
           app.locations = locs;
           resolve(app);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -435,7 +459,7 @@ export async function createProfile(user) {
             profile = JSON.parse(this.responseText).user;
             resolve(profile);
           }
-          else{
+          else if(this.readyState>4){
             reject("Device not ready");
           }
         });
@@ -477,7 +501,7 @@ export async function createOrder(order) {
 
             resolve(orderResponse);
           }
-          else{
+          else if(this.readyState>4){
             reject("Device not ready");
           }
         });
@@ -524,7 +548,7 @@ export async function searchCards(mobile) {
           }
           resolve(cardList);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -562,7 +586,7 @@ export async function getProfile(userId) {
           profile = JSON.parse(this.responseText).user;
           resolve(profile);
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -603,7 +627,7 @@ export async function updateProfile(user) {
               profile = JSON.parse(this.responseText).user;
               resolve(profile);
             }
-            else{
+            else if(this.readyState>4){
               reject("Device not ready");
             }
           });
@@ -736,7 +760,7 @@ export async function listPromotions() {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -772,7 +796,7 @@ export async function getPromotion(promotionId) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -808,7 +832,7 @@ export async function createClaim(claim, promotionId) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -843,7 +867,7 @@ export async function getClaims(external_user_id) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });
@@ -880,7 +904,7 @@ export async function fileUpload(fileInput) {
         if (this.readyState === 4) {
           resolve(JSON.parse(this.responseText));
         }
-        else{
+        else if(this.readyState>4){
           reject("Device not ready");
         }
       });

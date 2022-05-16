@@ -490,7 +490,7 @@ export async function createOrder(order) {
           EndPoints.orders;
         const authorization = 'Bearer ' + accessToken;
 
-        const data = JSON.stringify(order);
+        const data = JSON.stringify(order, replacer);
         const xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
 
@@ -916,4 +916,11 @@ export async function fileUpload(fileInput) {
       xhr.send(data);
     });
   });
+}
+
+function replacer(key,value)
+{
+    if (value=="undefined") return undefined;
+    else if (value==null)  return undefined;
+    else return value;
 }

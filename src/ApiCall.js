@@ -497,7 +497,14 @@ export async function createOrder(order) {
         xhr.addEventListener('readystatechange', function () {
           if (this.readyState === 4) {
             let orderResponse = new OrderResponse();
+            if(this.responseText.error != 'undefined' && this.responseText.error != null)
+            {
+              orderResponse.error = this.responseText.error;
+              orderResponse.hasError = true;
+            }
+            else{
             orderResponse = JSON.parse(this.responseText);
+            }
 
             resolve(orderResponse);
           }

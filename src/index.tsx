@@ -17,6 +17,6 @@ const WaivpayKartaSdk = NativeModules.WaivpayKartaSdk
       }
     );
 
-export function testLoggingEvent(a: String, b: String){
-	WaivpayKartaSdk.testLoggingEvent(a, b);
+export function addCard(a: number, b: number): Promise<number> {
+  return WaivpayKartaSdk.addCard(a, b);
 }

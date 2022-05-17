@@ -1,0 +1,1 @@
+../../../Target Support Files/waivpay-karta-sdk/waivpay-karta-sdk-umbrella.h

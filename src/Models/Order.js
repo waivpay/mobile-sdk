@@ -5,6 +5,7 @@ export class Order {
   email;
   phone_number;
   user_id;
+  validate;
   external_user_id;
   billing_same_address;
   recipient_address = new RecipientAddress();
@@ -18,10 +19,11 @@ export class Order {
   order_items = new Array();
 
 
-  constructor(email, phone_number, user_id, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items) {
+  constructor(email, phone_number, user_id, validate, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items) {
     this.email = email;
     this.phone_number = phone_number;
     this.user_id = user_id;
+    this.validate = validate;
     this.billing_same_address = billing_same_address;
     this.recipient_address = recipient_address;
     this.credit_card_number = credit_card_number;

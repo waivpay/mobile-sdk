@@ -1,13 +1,17 @@
 export class RecipientAddress {
-  address_line_1;
-  address_line_2;
+  company_name;
+  first_name;
+  last_name;
+  street_address;
   suburb;
   postcode;
   state;
 
-  constructor(address_line_1, address_line_2, suburb, postcode, state) {
-    this.address_line_1 = address_line_1;
-    this.address_line_2 = address_line_2;
+  constructor(company_name, first_name, last_name, street_address, suburb, postcode, state) {
+    this.company_name = company_name;
+    this.first_name = first_name;
+    this.last_name = last_name;
+    this.street_address = street_address;
     this.suburb = suburb;
     this.postcode = postcode;
     this.state = state;

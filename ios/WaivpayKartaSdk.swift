@@ -5,6 +5,10 @@ import PassKit
 @objc(WaivpayKartaSdk)
 class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     
+    @objc static func requiresMainQueueSetup() -> Bool {
+        return false
+    }
+    
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
       // Call Karta API
 
@@ -20,13 +24,13 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     }
 
     @objc(addCard:withB:withResolver:withRejecter:)
-    func addCard(a: Float, b: Float, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    func addCard(cardId: String, cardHolder: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         
         let requestConfig = PKAddPaymentPassRequestConfiguration.init(encryptionScheme: PKEncryptionScheme.ECC_V2);
-        requestConfig?.cardholderName = "John Appleseed";
-        requestConfig?.primaryAccountSuffix = "4444";
-        requestConfig?.primaryAccountIdentifier = "232123221";
-        requestConfig?.localizedDescription = "Special Gift Card";
+        requestConfig?.cardholderName = cardHolder;
+        requestConfig?.primaryAccountSuffix = cardId;
+//        requestConfig?.primaryAccountIdentifier = "232123221";
+//        requestConfig?.localizedDescription = "Special Gift Card";
         requestConfig?.paymentNetwork = PKPaymentNetwork(rawValue: "MASTERCARD");
         
         let passkitViewController = PKAddPaymentPassViewController.init(requestConfiguration: requestConfig!, delegate: self);
@@ -37,6 +41,6 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
             }
             topMostViewController?.present(passkitViewController!, animated:true, completion: nil);
         }
-        resolve(6);
+        resolve("ADDED");
     }
 }

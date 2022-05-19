@@ -12,6 +12,4 @@ export class AppConfig {
     this.app_id = app_id;
     this.environment = environment;
   }
-
-
 }

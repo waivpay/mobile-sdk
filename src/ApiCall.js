@@ -42,6 +42,12 @@ async function consoleLog(config, message) {
   }
 }
 
+function replacer(key, value) {
+  if (value == 'undefined') return undefined;
+  else if (value == null) return undefined;
+  else return value;
+}
+
 function getHostEndPointsCashback(config) {
   consoleLog(config, 'API call - getHostEndPointsCashback');
   if (config && config.environment) {
@@ -58,18 +64,18 @@ function getHostEndPointsCashback(config) {
 }
 
 async function sendToEndPoint(config, accessType, url, accessToken, data) {
+  consoleLog(config, '_________________________________________');
   consoleLog(config, 'sendToEndPoint ' + accessType + ' ' + url + ' ' + accessToken);
   consoleLog(config, 'Request');
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
-
   const response = await fetch(url, {
     method: accessType,
     headers: {
       'Authorization': authorization,
       'Content-Type': 'application/json',
     },
-    body: data,
+    body: JSON.stringify(data, replacer)
   });
 
   if (!response.ok) {
@@ -80,7 +86,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   const responseText = await response.json();
   consoleLog(config, 'Response');
   consoleLog(config, responseText);
-
+  consoleLog(config, '_________________________________________');
   return responseText;
 }
 
@@ -122,7 +128,7 @@ export async function sendTwoFactor(mobile) {
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
-    const data = JSON.stringify({ mobile_number: mobile });
+    const data = { "mobile_number": mobile };
     const responseText = await sendToEndPoint(config, 'POST', url, accessToken, data);
     if (responseText) {
       AsyncStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
@@ -140,9 +146,7 @@ export async function verifyTwoFactor(code) {
     const verificationId = await AsyncStorage.getItem('waivpay_sdk_verificationId');
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
-    const data = JSON.stringify({
-      verification_code: code,
-    });
+    const data = {verification_code: code};
 
     const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, data);
     if (responseText) {

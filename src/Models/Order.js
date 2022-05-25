@@ -18,9 +18,12 @@ export class Order {
   billing_address = new BillingAddress();
   order_items = new Array();
   delivery_option_id;
+  reference;
+  created_at;
+  total_cost;
 
 
-  constructor(delivery_option_id, email, phone_number, user_id, validate, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items) {
+  constructor(delivery_option_id, email, phone_number, user_id, validate, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items, reference, created_at, total_cost) {
     this.delivery_option_id = delivery_option_id;
     this.email = email;
     this.phone_number = phone_number;
@@ -37,6 +40,9 @@ export class Order {
     this.credit_card_name = credit_card_name;
     this.order_items = order_items;
     this.external_user_id = external_user_id;
+    this.reference = reference;
+    this.created_at = created_at;
+    this.total_cost = total_cost;
 
   }
 }

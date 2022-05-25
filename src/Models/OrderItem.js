@@ -12,6 +12,9 @@ export class OrderItem {
   delivery_last_name;
   from;
   scheduled_time;
+  card_fee;
+  card_image;
+
 
   constructor(card_design_id, card_type, amount, quantity, delivery_sms_number, delivery_email, include_message, message, to, delivery_first_name, delivery_last_name, from, scheduled_time) {
     this.card_design_id = card_design_id;

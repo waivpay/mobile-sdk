@@ -12,7 +12,9 @@ import { Profile } from './Models/Profile';
 import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
 import { OrderResponse } from './Models/OrderResponse';
+import {OrderList, Orders} from './Models/OrderList'
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CardCallBackResponse } from './Models/CardCallBackResponse';
 
 async function getConfig() {
   let appConfig = new AppConfig();
@@ -436,6 +438,54 @@ export async function updateProfile(user) {
   } else {
     throw 'Please pass object of type Profile';
   }
+}
+
+export async function getOrders(user_id) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - getOrders');
+
+  return new Promise(async function(resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+    getHostEndPoints(config) +
+    EndPoints.appSpecific +
+    config.app_id +
+    EndPoints.orders +
+    "?user_id=" +
+    user_id;
+
+    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
+    if (responseText) {
+      const orderList = new OrderList([]);
+      let orders = [];
+      orders = responseText.orders;
+      for (let i = 0; i < orders.length; i++) {
+        let order = new Order();
+        order = orders[i];
+        orderList.orders.push(order);
+      }
+      resolve(orderList);
+    } else {
+      resolve(null);
+    }
+  });
+}
+export async function cardCallBack(callBackUrl, token) {
+
+  return new Promise(async function(resolve, reject) {
+    const accessToken = token;
+    const url = callBackUrl;
+    const req = {"tokenId": token};
+    const responseText = await sendToEndPoint("", 'POST', url, accessToken, req);
+
+    if (responseText) {
+      let carCallBackResponse = new CardCallBackResponse();
+      carCallBackResponse = responseText;
+      resolve(carCallBackResponse);
+    } else {
+      resolve(null);
+    }
+  });
 }
 
 /* ***********

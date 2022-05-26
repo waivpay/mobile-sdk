@@ -471,7 +471,8 @@ export async function getOrders(user_id) {
   });
 }
 export async function cardCallBack(callBackUrl, token) {
-
+  const config = await getConfig();
+  consoleLog(config, 'API call - cardCallBack');
   return new Promise(async function(resolve, reject) {
     const accessToken = token;
     const url = callBackUrl;

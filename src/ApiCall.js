@@ -423,7 +423,7 @@ export async function updateProfile(user) {
           EndPoints.users +
           '/' +
           user.id;
-        const responseText = await sendToEndPoint(config, 'POST', url, accessToken, user);
+        const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, user);
         if (responseText) {
           let profile = new Profile();
           profile = responseText.user;
@@ -477,7 +477,7 @@ export async function cardCallBack(callBackUrl, token) {
     const accessToken = token;
     const url = callBackUrl;
     const req = {"tokenId": token};
-    const responseText = await sendToEndPoint("", 'POST', url, accessToken, req);
+    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, req);
 
     if (responseText) {
       let carCallBackResponse = new CardCallBackResponse();

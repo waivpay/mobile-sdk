@@ -657,7 +657,7 @@ async function getConfigCashBack() {
 
 // function to get an access token by authenticating with Waivpay Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
-async function getAccessToken() {
+export async function getAccessToken() {
   const config = await getConfig();
   consoleLog(config, 'API call - getAccessToken');
   const accessToken = await AsyncStorage.getItem('accessToken');

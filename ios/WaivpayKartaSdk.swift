@@ -4,8 +4,13 @@ import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
- 
 
+extension Data {
+    func hexEncodedString() -> String {
+        return map { String(format: "%02hhx", $0) }.joined()
+    }
+}
+ 
 @objc(WaivpayKartaSdk)
 class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     
@@ -22,28 +27,16 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     }
     
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
-      // Call Karta API
+
         let strNonce = String(decoding: nonce, as: UTF8.self)
         let strNonceSignature = String(decoding: nonceSignature, as: UTF8.self)
-        let nonce_base64Encoded = (strNonce.data(using: .utf8)?.base64EncodedString())!
-        let nonceSignature_base64Encoded = (strNonceSignature.data(using: .utf8)?.base64EncodedString())!
+        let nonce_hex = nonce.hexEncodedString()
+        let nonceSignature_hex = nonceSignature.hexEncodedString()
         
-        var cert_leaf = "";
-        var cert_root = "";
-        for (index, cert) in certificates.enumerated()
-        {
-            let strCert = String(decoding: cert, as: UTF8.self)
-            if(index == 0)
-            {
-                cert_leaf = (strCert.data(using: .utf8)?.base64EncodedString())!
-            }
-            if(index == 1)
-            {
-                cert_root = (strCert.data(using: .utf8)?.base64EncodedString())!
-            }
-        }
+        var cert_leaf = certificates[0].base64EncodedString();
+        var cert_root = certificates[1].base64EncodedString();
+
         var host = "";
-        //calling waivpay api
         if(environment == "staging")
         {
             host = host_staging + "api/apps/" + appid + "/cards/" + cardNumber + "/provision";
@@ -55,7 +48,20 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         
         var semaphore = DispatchSemaphore (value: 0)
 
-        let parameters = "{\n\"wallet_type\": \"ios\",\n\"delivery_email\": \"" + delEmail + "\",\n\"nonce\": \"" + nonce_base64Encoded + "\",\n\"nonce_signature\": \"" + nonceSignature_base64Encoded + "\",\n\"certificate_leaf\": \"" + cert_leaf + "\",\n\"certificate_root\": \"" + cert_root + "\"\n}"
+        let parameters = "{\n\"wallet_type\": \"ios\",\n\"delivery_email\": \"" + delEmail + "\",\n\"nonce\": \"" + nonce_hex + "\",\n\"nonce_signature\": \"" + nonceSignature_hex + "\",\n\"certificate_leaf\": \"" + cert_leaf + "\",\n\"certificate_root\": \"" + cert_root + "\"\n}"
+        
+        var dialogMessage = UIAlertController(title: "Attention", message: parameters, preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
+             print(parameters)
+          })
+        
+        dialogMessage.addAction(ok)
+        
+        var topMostViewController = UIApplication.shared.keyWindow?.rootViewController;
+        while let presentedViewController = topMostViewController?.presentedViewController {
+            topMostViewController = presentedViewController
+        }
+        topMostViewController?.present(dialogMessage, animated: true, completion: nil)
         
         print("printing payload : ");
         print(parameters);

@@ -1,6 +1,6 @@
 {
   "name": "waivpay-karta-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "An React Native SDK for Waivpay to Karta APIs that enable provisioning of digital cards for iOS and Android",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
@@ -36,7 +36,7 @@
     "ios",
     "android"
   ],
-  "repository": "https://git-codecommit.ap-southeast-2.amazonaws.com/v1/repos/WaivpayKartaSDK",
+  "repository": "git://github.com/conn3cted/WaivpayReactNativeSDK.git",
   "author": "Conn3cted Pty Ltd <support@conn3cted.com> (https://conn3cted.com)",
   "license": "MIT",
   "bugs": {
@@ -44,7 +44,7 @@
   },
   "homepage": "https://git-codecommit.ap-southeast-2.amazonaws.com/v1/repos/WaivpayKartaSDK#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://npm.pkg.github.com"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^11.0.0",
@@ -61,8 +61,8 @@
     "jest": "^26.0.1",
     "pod-install": "^0.1.0",
     "prettier": "^2.0.5",
-    "react": "16.13.1",
-    "react-native": "0.63.4",
+    "react": "17.0.2",
+    "react-native": "0.68.2",
     "react-native-builder-bob": "^0.18.2",
     "release-it": "^14.2.2",
     "typescript": "^4.1.3"

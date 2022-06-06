@@ -1,21 +1,25 @@
 # waivpay-karta-sdk
 
-An React Native SDK for Waivpay to Karta APIs that enable provisioning of digital cards for iOS and Android
+A React Native SDK for Waivpay to Karta APIs that enable provisioning of digital cards for iOS and Android
 
 ## Installation
 
 ```sh
-npm install waivpay-karta-sdk
+npm install @conn3cted/waivpay-karta-sdk@0.1.0
 ```
 
 ## Usage
 
 ```js
-import { multiply } from "waivpay-karta-sdk";
+import {setConfig} from "waivpay-karta-sdk/src/ApiCall";
 
-// ...
+import {AppConfig} from "waivpay-karta-sdk/src/Models/AppConfig";
 
-const result = await multiply(3, 7);
+…..
+
+var appConfig = new AppConfig("client_id”, “client_secret”, “app_id”, “environment(staging|prod)");
+
+setConfig(appConfig);
 ```
 
 ## Contributing

@@ -721,7 +721,7 @@ async function getAccessTokenCashBack() {
         return accessToken_Obj.access_token;
       }
     }
-    const url = getHostEndPointsCashback(config) + EndPoEndPointsCashBackints.accessToken;
+    const url = getHostEndPointsCashback(config) + EndPointsCashBack.accessToken;
     const data =
       'grant_type=client_credentials&' +
       'client_id=' +

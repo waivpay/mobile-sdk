@@ -32,22 +32,6 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         return false
     }
     
-    func displayMsg(dialogMsg: String) {
-        
-        let dialogMessage = UIAlertController(title: "Attention", message: dialogMsg, preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
-             print(dialogMsg)
-          })
-        
-        dialogMessage.addAction(ok)
-        
-        var topMostViewController = UIApplication.shared.keyWindow?.rootViewController;
-        while let presentedViewController = topMostViewController?.presentedViewController {
-            topMostViewController = presentedViewController
-        }
-        topMostViewController?.present(dialogMessage, animated: true, completion: nil)
-    }
-    
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
 
         _ = String(decoding: nonce, as: UTF8.self)
@@ -69,10 +53,6 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         }
 
         let parameters = "{\n\"wallet_type\": \"ios\",\n\"delivery_email\": \"" + delEmail + "\",\n\"nonce\": \"" + nonce_hex + "\",\n\"nonce_signature\": \"" + nonceSignature_hex + "\",\n\"certificate_leaf\": \"" + cert_leaf + "\",\n\"certificate_root\": \"" + cert_root + "\"\n}"
-        
-        print("printing payload : ");
-        print(parameters);
-        self.displayMsg(dialogMsg: parameters)
         let postData = parameters.data(using: .utf8)
 
         var request = URLRequest(url: URL(string: host)!,timeoutInterval: Double.infinity)
@@ -85,23 +65,16 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
           guard let data = data else {
             print(String(describing: error))
-              
-              self.displayMsg(dialogMsg: String(describing: error))
             return
           }
             do {
             
             let decoder = JSONDecoder();
             let addResponse = try decoder.decode(KartaPaymentPassResponse.self, from: data);
-            
-            print(String(data: data, encoding: .utf8)!);
-            self.displayMsg(dialogMsg: "Data " + String(data: data, encoding: .utf8)!);
             let paymentPassRequest = PKAddPaymentPassRequest();
                 paymentPassRequest.activationData = Data(base64Encoded: addResponse.activationData, options: []);
                 paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
                 paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
-            print("printing paymentPassRequest : ");
-            print(paymentPassRequest);
             
             handler(paymentPassRequest);
             } catch {

@@ -5,6 +5,12 @@ import Foundation
 import FoundationNetworking
 #endif
 
+struct KartaPaymentPassResponse: Codable {
+    let activationData: String
+    let ephemeralPublicKey: String
+    let encryptedPassData: String
+}
+
 extension Data {
     func hexEncodedString() -> String {
         return map { String(format: "%02hhx", $0) }.joined()
@@ -26,15 +32,31 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         return false
     }
     
+    func displayMsg(dialogMsg: String) {
+        
+        let dialogMessage = UIAlertController(title: "Attention", message: dialogMsg, preferredStyle: .alert)
+        let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
+             print(dialogMsg)
+          })
+        
+        dialogMessage.addAction(ok)
+        
+        var topMostViewController = UIApplication.shared.keyWindow?.rootViewController;
+        while let presentedViewController = topMostViewController?.presentedViewController {
+            topMostViewController = presentedViewController
+        }
+        topMostViewController?.present(dialogMessage, animated: true, completion: nil)
+    }
+    
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
 
-        let strNonce = String(decoding: nonce, as: UTF8.self)
-        let strNonceSignature = String(decoding: nonceSignature, as: UTF8.self)
+        _ = String(decoding: nonce, as: UTF8.self)
+        _ = String(decoding: nonceSignature, as: UTF8.self)
         let nonce_hex = nonce.hexEncodedString()
         let nonceSignature_hex = nonceSignature.hexEncodedString()
         
-        var cert_leaf = certificates[0].base64EncodedString();
-        var cert_root = certificates[1].base64EncodedString();
+        let cert_leaf = certificates[0].base64EncodedString();
+        let cert_root = certificates[1].base64EncodedString();
 
         var host = "";
         if(environment == "staging")
@@ -45,26 +67,12 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         {
             host = host_production + "api/apps/" + appid + "/cards/" + cardNumber + "/provision";
         }
-        
-        var semaphore = DispatchSemaphore (value: 0)
 
         let parameters = "{\n\"wallet_type\": \"ios\",\n\"delivery_email\": \"" + delEmail + "\",\n\"nonce\": \"" + nonce_hex + "\",\n\"nonce_signature\": \"" + nonceSignature_hex + "\",\n\"certificate_leaf\": \"" + cert_leaf + "\",\n\"certificate_root\": \"" + cert_root + "\"\n}"
         
-        var dialogMessage = UIAlertController(title: "Attention", message: parameters, preferredStyle: .alert)
-        let ok = UIAlertAction(title: "OK", style: .default, handler: { (action) -> Void in
-             print(parameters)
-          })
-        
-        dialogMessage.addAction(ok)
-        
-        var topMostViewController = UIApplication.shared.keyWindow?.rootViewController;
-        while let presentedViewController = topMostViewController?.presentedViewController {
-            topMostViewController = presentedViewController
-        }
-        topMostViewController?.present(dialogMessage, animated: true, completion: nil)
-        
         print("printing payload : ");
         print(parameters);
+        self.displayMsg(dialogMsg: parameters)
         let postData = parameters.data(using: .utf8)
 
         var request = URLRequest(url: URL(string: host)!,timeoutInterval: Double.infinity)
@@ -77,26 +85,33 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
           guard let data = data else {
             print(String(describing: error))
-            semaphore.signal()
+              
+              self.displayMsg(dialogMsg: String(describing: error))
             return
           }
-          print(String(data: data, encoding: .utf8)!)
-          semaphore.signal()
+            do {
+            
+            let decoder = JSONDecoder();
+            let addResponse = try decoder.decode(KartaPaymentPassResponse.self, from: data);
+            
+            print(String(data: data, encoding: .utf8)!);
+            self.displayMsg(dialogMsg: "Data " + String(data: data, encoding: .utf8)!);
+            let paymentPassRequest = PKAddPaymentPassRequest();
+                paymentPassRequest.activationData = Data(base64Encoded: addResponse.activationData, options: []);
+                paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
+                paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
+            print("printing paymentPassRequest : ");
+            print(paymentPassRequest);
+            
+            handler(paymentPassRequest);
+            } catch {
+                
+            }
+
         }
-
-        task.resume()
-        semaphore.wait()
-
         
+        task.resume();
 
-        let paymentPassRequest = PKAddPaymentPassRequest();
-        paymentPassRequest.activationData = Data(base64Encoded: "Activation Data", options: []);
-        paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: "Ephemeral Public Key", options: []);
-        paymentPassRequest.encryptedPassData = Data(base64Encoded: "Encrypted Pass Data", options: []);
-        print("printing paymentPassRequest : ");
-        print(paymentPassRequest);
-        handler(paymentPassRequest);
-        
     }
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
@@ -115,8 +130,6 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         let requestConfig = PKAddPaymentPassRequestConfiguration.init(encryptionScheme: PKEncryptionScheme.ECC_V2);
         requestConfig?.cardholderName = cardHolder;
         requestConfig?.primaryAccountSuffix = cardId;
-//        requestConfig?.primaryAccountIdentifier = "232123221";
-//        requestConfig?.localizedDescription = "Special Gift Card";
         requestConfig?.paymentNetwork = PKPaymentNetwork(rawValue: "MASTERCARD");
         
         let passkitViewController = PKAddPaymentPassViewController.init(requestConfiguration: requestConfig!, delegate: self);

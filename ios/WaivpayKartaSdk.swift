@@ -24,10 +24,12 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     var environment = "";
     var appid = "";
     var cardNumber = "";
+    var cardSfx = "";
     var delEmail = "";
     let host_staging = "https://webstores-staging.herokuapp.com/";
     let host_production = "https://webstores.herokuapp.com/";
     var token = "";
+//    var klPaymentPassRequest = PKAddPaymentPassRequest();
     
     @objc static func requiresMainQueueSetup() -> Bool {
         return false
@@ -76,6 +78,10 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
                     paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
                     paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
                 
+//                klPaymentPassRequest.self.activationData = Data(base64Encoded: addResponse.activationData, options: []);
+//                klPaymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
+//                klPaymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
+                
                 handler(paymentPassRequest);
             } catch {
                 
@@ -88,9 +94,9 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
-//        if (getCardExists()) {
-//            handler(paymentPassRequest);
-//        }
+        if (getCardExists(cardSfx)) {
+            handler(klPaymentPassRequest);
+        }
     }
 
     @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
@@ -99,6 +105,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
          environment = env;
          appid = appId;
          cardNumber = cardId;
+        cardSfx = cardSuffix;
          delEmail = deliveryEmail;
         token = accessToken;
         

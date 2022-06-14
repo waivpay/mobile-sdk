@@ -1,5 +1,6 @@
 import Foundation
 import PassKit
+import WatchConnectivity
 import Foundation
 #if canImport(FoundationNetworking)
 import FoundationNetworking
@@ -33,7 +34,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
     }
     
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
-
+        
         _ = String(decoding: nonce, as: UTF8.self)
         _ = String(decoding: nonceSignature, as: UTF8.self)
         let nonce_hex = nonce.hexEncodedString()
@@ -68,19 +69,17 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
             return
           }
             do {
-            
-            let decoder = JSONDecoder();
-            let addResponse = try decoder.decode(KartaPaymentPassResponse.self, from: data);
-            let paymentPassRequest = PKAddPaymentPassRequest();
-                paymentPassRequest.activationData = Data(base64Encoded: addResponse.activationData, options: []);
-                paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
-                paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
-            
-            handler(paymentPassRequest);
+                let decoder = JSONDecoder();
+                let addResponse = try decoder.decode(KartaPaymentPassResponse.self, from: data);
+                let paymentPassRequest = PKAddPaymentPassRequest();
+                    paymentPassRequest.activationData = Data(base64Encoded: addResponse.activationData, options: []);
+                    paymentPassRequest.ephemeralPublicKey = Data(base64Encoded: addResponse.ephemeralPublicKey, options: []);
+                    paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
+                
+                handler(paymentPassRequest);
             } catch {
                 
             }
-
         }
         
         task.resume();
@@ -89,10 +88,13 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
+//        if (getCardExists()) {
+//            handler(paymentPassRequest);
+//        }
     }
 
-    @objc(addCard:withB:withE:withD:withA:withT:withResolver:withRejecter:)
-    func addCard(cardId: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
+    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         
          environment = env;
          appid = appId;
@@ -102,8 +104,9 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
         
         let requestConfig = PKAddPaymentPassRequestConfiguration.init(encryptionScheme: PKEncryptionScheme.ECC_V2);
         requestConfig?.cardholderName = cardHolder;
-        requestConfig?.primaryAccountSuffix = cardId;
+        requestConfig?.primaryAccountSuffix = cardSuffix;
         requestConfig?.paymentNetwork = PKPaymentNetwork(rawValue: "MASTERCARD");
+        requestConfig?.primaryAccountIdentifier = getCardFPAN(cardSuffix);
         
         let passkitViewController = PKAddPaymentPassViewController.init(requestConfiguration: requestConfig!, delegate: self);
         DispatchQueue.main.async {
@@ -113,6 +116,74 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate {
             }
             topMostViewController?.present(passkitViewController!, animated:true, completion: nil);
         }
-        resolve("ADDED");
+    }
+    
+    func getCardFPAN(_ cardSuffix: String?) -> String? {
+            let passLibrary = PKPassLibrary()
+            var paymentPasses = passLibrary.passes(of: .payment)
+            for pass in paymentPasses {
+                let paymentPass = pass.paymentPass
+                if paymentPass?.primaryAccountNumberSuffix == cardSuffix {
+                    return paymentPass?.primaryAccountIdentifier
+                }
+                
+            }
+            if WCSession.isSupported() {
+                // check if the device support to handle an Apple Watch
+                let session = WCSession.default;
+                session.activate();
+                if session.isPaired {
+                    // check if the iPhone is paired with the Apple Watch
+                    paymentPasses = passLibrary.remotePaymentPasses()
+                    for pass in paymentPasses {
+                        let paymentPass = pass.paymentPass
+                        if paymentPass?.primaryAccountNumberSuffix == cardSuffix {
+                            return paymentPass?.primaryAccountIdentifier
+                        }
+                    }
+                }
+            }
+            return nil
+        }
+    
+    func getCardExists(_ cardSuffix: String?) ->  Bool {
+        var existsOnPhone = false;
+        var existsOnWatch = false;
+
+        let passLibrary = PKPassLibrary()
+        var paymentPasses = passLibrary.passes(of: .payment)
+        for pass in paymentPasses {
+            let paymentPass = pass.paymentPass
+            if paymentPass?.primaryAccountNumberSuffix == cardSuffix {
+                existsOnPhone = true
+            }
+            
+        }
+        if WCSession.isSupported() {
+            // check if the device support to handle an Apple Watch
+            let session = WCSession.default;
+            session.activate();
+            if session.isPaired {
+                // check if the iPhone is paired with the Apple Watch
+                paymentPasses = passLibrary.remotePaymentPasses()
+                for pass in paymentPasses {
+                    let paymentPass = pass.paymentPass
+                    if paymentPass?.primaryAccountNumberSuffix == cardSuffix {
+                        existsOnWatch = true
+                    }
+                }
+            } else {
+                existsOnWatch = true
+            }
+        } else {
+            existsOnWatch = true
+        }
+        
+        return (!existsOnPhone || !existsOnWatch);
+    }
+    
+    @objc(cardExists:withResolver:withRejecter:)
+    func cardExists(cardId: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        resolve(getCardExists(cardId));
     }
 }

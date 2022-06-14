@@ -17,6 +17,10 @@ const WaivpayKartaSdk = NativeModules.WaivpayKartaSdk
       }
     );
 
-export function addCard(cardId: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String): Promise<String> {
-  return WaivpayKartaSdk.addCard(cardId, cardHolder, env, deliveryEmail, appId, accessToken);
+export function addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String): Promise<String> {
+  return WaivpayKartaSdk.addCard(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken);
+}
+
+export function cardExists(cardId: String): Promise<String> {
+  return WaivpayKartaSdk.cardExists(cardId);
 }

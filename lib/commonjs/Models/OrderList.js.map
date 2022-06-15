@@ -1,0 +1,1 @@
+{"version":3,"names":["OrderList","constructor","orders","Array"],"sources":["OrderList.js"],"sourcesContent":["export class OrderList {\n    orders = new Array();\n  \n    constructor(orders) {\n      this.orders = orders;\n    }\n  }"],"mappings":";;;;;;;;;AAAO,MAAMA,SAAN,CAAgB;EAGnBC,WAAW,CAACC,MAAD,EAAS;IAAA,gCAFX,IAAIC,KAAJ,EAEW;;IAClB,KAAKD,MAAL,GAAcA,MAAd;EACD;;AALkB"}

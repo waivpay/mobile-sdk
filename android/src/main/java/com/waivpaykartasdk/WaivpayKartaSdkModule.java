@@ -24,18 +24,9 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-
-    // Example method
-    // See https://reactnative.dev/docs/native-modules-android
-    @ReactMethod
-    public void multiply(int a, int b, Promise promise) {
-        promise.resolve(a * b);
-    }
-
-    public static native int nativeMultiply(int a, int b);
-
     @ReactMethod
     public void cardExists(String cardId, Promise promise) {
+        Log.e("KLHERE","cardExists");
         promise.resolve(false);
     }
 
@@ -43,7 +34,7 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Promise promise) {
-        Log.e("KLHERE","KLHERE");
+        Log.e("KLHERE","addCard");
         try {
             AddToWallet addToWallet = new AddToWallet();
             addToWallet.addCardToWallet(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, this.getCurrentActivity());

@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
+import com.google.common.io.BaseEncoding;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -69,23 +70,28 @@ public class AddToWallet {
             String androidResponse = response.body().string();
             Log.e("KLHERE",androidResponse);
 
-            byte[] opc = Base64.encode(androidResponse.getBytes(), Base64.DEFAULT);
-
+//            byte[] opc = Base64.encode(androidResponse.getBytes(), Base64.DEFAULT);
+            String opc = BaseEncoding.base64().encode(androidResponse.getBytes());
+            Log.e("KLHERE","opc");
             TapAndPayClient tapAndPayClient = TapAndPay.getClient(activity);
+            Log.e("KLHERE","client");
+
             PushTokenizeRequest pushTokenizeRequest = new PushTokenizeRequest.Builder()
-                    .setOpaquePaymentCard(opc)
+                    .setOpaquePaymentCard(opc.getBytes())
                     .setNetwork(TapAndPay.CARD_NETWORK_MASTERCARD)
                     .setTokenServiceProvider(TapAndPay.TOKEN_PROVIDER_MASTERCARD)
                     .setDisplayName(cardHolder)
                     .setLastDigits(cardSuffix)
                     .build();
-
+            Log.e("KLHERE","pushTokenizeRequest");
             tapAndPayClient.pushTokenize(
                     activity,
                     pushTokenizeRequest,
                     3
             );
+            Log.e("KLHERE","pushTokenize");
         } catch (Exception e) {
+            Log.e("KLHERE",e.getMessage());
             e.printStackTrace();
         }
     }

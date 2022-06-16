@@ -24,7 +24,3 @@ export function addCard(cardId: String, cardSuffix: String, cardHolder: String, 
 export function cardExists(cardId: String): Promise<String> {
   return WaivpayKartaSdk.cardExists(cardId);
 }
-
-export function multiply(a: number, b: number): Promise<number> {
-  return WaivpayKartaSdk.multiply(a, b);
-}

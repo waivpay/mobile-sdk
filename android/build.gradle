@@ -5,9 +5,6 @@ buildscript {
             mavenCentral()
             jcenter()
             maven {
-                url("file:/Users/kelly/Library/Android/sdk/extras/google/android")
-            }
-            maven {
                 url "http://nexus.conn3cted.net:8081/nexus/content/groups/public"
                 allowInsecureProtocol = true
                 credentials {
@@ -57,9 +54,6 @@ android {
 repositories {
     mavenLocal()
     maven {
-        url("file:/Users/kelly/Library/Android/sdk/extras/google/android")
-    }
-    maven {
         url "http://nexus.conn3cted.net:8081/nexus/content/groups/public"
         allowInsecureProtocol = true
         credentials {
@@ -80,4 +74,6 @@ dependencies {
     //noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation 'com.google.android.gms:play-services-tapandpay:18.2.0'
+
+    compile group: 'com.google.guava', name: 'guava', version: '15.0'
 }

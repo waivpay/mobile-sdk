@@ -353,7 +353,7 @@ export async function createOrder(order) {
   }
 }
 
-// get App Details
+// get cards by mobile number
 export async function searchCards(mobile) {
   const config = await getConfig();
   consoleLog(config, 'API call - searchCards');

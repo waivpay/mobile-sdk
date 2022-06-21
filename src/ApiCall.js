@@ -13,12 +13,12 @@ import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
 import { OrderResponse } from './Models/OrderResponse';
 import {OrderList, Orders} from './Models/OrderList'
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 
 async function getConfig() {
   let appConfig = new AppConfig();
-  const config = await AsyncStorage.getItem('waivpay_sdk_config_app_id');
+  const config = await EncryptedStorage.getItem('waivpay_sdk_config_app_id');
   appConfig = JSON.parse(config);
   return appConfig;
 }
@@ -92,7 +92,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   return responseText;
 }
 
-//sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
+//sets client key,  client secret and app_id in EncryptedStorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig) {
   if (appConfig != null && appConfig instanceof AppConfig) {
     const client_id = appConfig.client_id;
@@ -110,7 +110,7 @@ export async function setConfig(appConfig) {
       environment !== 'undefined'
     ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
-      await AsyncStorage.setItem(
+      await EncryptedStorage.setItem(
         'waivpay_sdk_config_app_id',
         JSON.stringify(appConfig),
       );
@@ -133,7 +133,7 @@ export async function sendTwoFactor(mobile) {
     const data = { "mobile_number": mobile };
     const responseText = await sendToEndPoint(config, 'POST', url, accessToken, data);
     if (responseText) {
-      AsyncStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
+      EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
       resolve(responseText);
     } else {
       resolve(null);
@@ -145,7 +145,7 @@ export async function verifyTwoFactor(code) {
   const config = await getConfig();
   return new Promise(async function(resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
-    const verificationId = await AsyncStorage.getItem('waivpay_sdk_verificationId');
+    const verificationId = await EncryptedStorage.getItem('waivpay_sdk_verificationId');
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
     const data = {verification_code: code};
@@ -541,7 +541,7 @@ export async function listPromotions() {
   });
 }
 
-//sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
+//sets client key,  client secret and app_id in EncryptedStorage, to be used in subsequent api calls tp Waivpay
 export async function setConfigCashBack(appConfig) {
   if (appConfig != null && appConfig instanceof AppConfig) {
     const client_id = appConfig.client_id;
@@ -559,7 +559,7 @@ export async function setConfigCashBack(appConfig) {
       environment !== 'undefined'
     ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
-      await AsyncStorage.setItem(
+      await EncryptedStorage.setItem(
         'waivpay_sdk_config_cashback_app_id',
         JSON.stringify(appConfig),
       );
@@ -644,7 +644,7 @@ export async function getClaims(external_user_id) {
 
 async function getConfigCashBack() {
   let appConfig = new AppConfig();
-  const config = await AsyncStorage.getItem(
+  const config = await EncryptedStorage.getItem(
     'waivpay_sdk_config_cashback_app_id',
   );
   if (config) {
@@ -660,7 +660,7 @@ async function getConfigCashBack() {
 export async function getAccessToken() {
   const config = await getConfig();
   consoleLog(config, 'API call - getAccessToken');
-  const accessToken = await AsyncStorage.getItem('accessToken');
+  const accessToken = await EncryptedStorage.getItem('accessToken');
   if (config != 'undefined' && config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
       const accessToken_Obj = JSON.parse(accessToken);
@@ -694,7 +694,7 @@ export async function getAccessToken() {
 
     const responseText = await response.json();
     if (responseText) {
-      AsyncStorage.setItem('accessToken', JSON.stringify(responseText));
+      EncryptedStorage.setItem('accessToken', JSON.stringify(responseText));
       return responseText.access_token;
     } else {
       return null;
@@ -710,7 +710,7 @@ export async function getAccessToken() {
 async function getAccessTokenCashBack() {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - getAccessTokenCashBack');
-  const accessToken = await AsyncStorage.getItem('accessToken_cashBack');
+  const accessToken = await EncryptedStorage.getItem('accessToken_cashBack');
   if (config != 'undefined' && config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
       const accessToken_Obj = JSON.parse(accessToken);
@@ -744,7 +744,7 @@ async function getAccessTokenCashBack() {
 
     const responseText = await response.json();
     if (responseText) {
-      AsyncStorage.setItem('accessToken_cashBack', JSON.stringify(responseText));
+      EncryptedStorage.setItem('accessToken_cashBack', JSON.stringify(responseText));
       return responseText.access_token;
     } else {
       return null;

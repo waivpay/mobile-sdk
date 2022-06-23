@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.waivpaykartasdk">
+    <!-- The NFC permission is used to check whether Google Pay is the default wallet on the device. -->
+    <uses-permission android:name="android.permission.NFC"/>
 
 </manifest>

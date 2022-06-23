@@ -1,1 +1,0 @@
-{"version":3,"names":["CardList","constructor","cards","Array"],"sources":["CardList.js"],"sourcesContent":["export class CardList {\n  cards = new Array();\n\n  constructor(cards) {\n    this.cards = cards;\n  }\n}\n"],"mappings":";;;;;;;;;AAAO,MAAMA,QAAN,CAAe;EAGpBC,WAAW,CAACC,KAAD,EAAQ;IAAA,+BAFX,IAAIC,KAAJ,EAEW;;IACjB,KAAKD,KAAL,GAAaA,KAAb;EACD;;AALmB"}

@@ -1,8 +1,17 @@
 import { AppConfig } from './Models/AppConfig';
 import EncryptedStorage from 'react-native-encrypted-storage/lib/typescript/EncryptedStorage';
 import { EndPoints } from './util/ServerEndPoints';
-import type { Profile } from './Models/Profile';
+import { Profile } from './Models/Profile';
 import type { Order } from './Models/Order';
+import { Brand } from './Models/Brand';
+import { Balance } from './Models/Balance';
+import { Catalogue } from './Models/Catalogue';
+import { Transaction } from './Models/Transaction';
+import { Card } from './Models/Card';
+import { OrderResponse } from './Models/OrderResponse';
+import { CardList } from './Models/CardList';
+import { OrderList } from './Models/OrderList';
+import { CardCallBackResponse } from './Models/CardCallBackResponse';
 
 async function consoleLog(config: AppConfig, message: string) {
     if (config && config.environment == 'staging') {
@@ -32,12 +41,12 @@ function getHostEndPoints(config: AppConfig) {
     }
   }
 
-  function replacer(key: string, value: string) {
-    console.log(key);
-    if (value == 'undefined') return undefined;
-    else if (value == null) return undefined;
-    else return value;
-  }
+  // function replacer(key: string, value: string) {
+  //   console.log(key);
+  //   if (value == 'undefined') return undefined;
+  //   else if (value == null) return undefined;
+  //   else return value;
+  // }
 
 
   async function sendToEndPoint(config:AppConfig, accessType:string, url:string, accessToken:String, data: string){
@@ -52,7 +61,7 @@ function getHostEndPoints(config: AppConfig) {
           'Authorization': authorization,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(JSON.parse(data), replacer)
+        body: data
       });
   
     if (!response.ok) {
@@ -188,23 +197,26 @@ export async function getAccessToken() {
   }
 
   // get App Details
-export async function getBrand() {
+export async function getBrand() : Promise<Brand> {
   const config = await getConfig();
   consoleLog(config, 'API call - getBrand');
   return new Promise(async function(resolve) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, "");
+    var resBrand = new Brand();
     if (responseText) {
+      
+      resBrand = responseText;
       resolve(responseText);
     } else {
-      resolve(null);
+      resolve(resBrand);
     }
   });
 }
 
 // get catalogue
-export async function getCatalogue() {
+export async function getCatalogue() : Promise<Catalogue>{
   const config = await getConfig();
   consoleLog(config, 'API call - getCatalogue');
 
@@ -213,15 +225,17 @@ export async function getCatalogue() {
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue;
 
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, "");
+    var resCat = new Catalogue();
     if (responseText) {
-      resolve(responseText);
+      resCat = responseText;
+      resolve(resCat);
     } else {
-      resolve(null);
+      resolve(resCat);
     }
   });
 }
 
-export async function getBalance(cardId: string) {
+export async function getBalance(cardId: string) : Promise<Balance>{
   const config = await getConfig();
   consoleLog(config, 'API call - getBalance');
   return new Promise(async function(resolve) {
@@ -236,16 +250,18 @@ export async function getBalance(cardId: string) {
       EndPoints.balance;
 
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resBal = new Balance();
     if (responseText) {
-      resolve(responseText);
+      resBal= responseText;
+      resolve(resBal);
     } else {
-      resolve(null);
+      resolve(resBal);
     }
   });
 }
 
 // get transactions
-export async function getTransactions(cardId: string) {
+export async function getTransactions(cardId: string) : Promise<Transaction>{
   const config = await getConfig();
   consoleLog(config, 'API call - getTransactions');
   return new Promise(async function(resolve) {
@@ -259,16 +275,18 @@ export async function getTransactions(cardId: string) {
       cardId +
       EndPoints.transaction;
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resTrans = new Transaction();
     if (responseText) {
-      resolve(responseText);
+      resTrans = responseText;
+      resolve(resTrans);
     } else {
-      resolve(null);
+      resolve(resTrans);
     }
   });
 }
 
 // get cardDetails
-export async function getCardDetails(cardId: string) {
+export async function getCardDetails(cardId: string) : Promise<Card> {
   const config = await getConfig();
   consoleLog(config, 'API call - getCardDetails');
   return new Promise(async function(resolve) {
@@ -281,16 +299,18 @@ export async function getCardDetails(cardId: string) {
       '/' +
       cardId;
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resCard = new Card();
     if (responseText) {
-      resolve(responseText);
+      resCard = responseText;
+      resolve(resCard);
     } else {
-      resolve(null);
+      resolve(resCard);
     }
   });
 }
 
 //create a new user
-export async function createProfile(user: Profile) {
+export async function createProfile(user: Profile) : Promise<Profile>{
   const config = await getConfig();
   consoleLog(config, 'API call - createProfile');
     return new Promise(async function(resolve) {
@@ -302,16 +322,18 @@ export async function createProfile(user: Profile) {
         EndPoints.users;
 
       const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(user));
+      var resProf = new Profile();
       if (responseText) {
-        resolve(responseText);
+        resProf = responseText;
+        resolve(resProf);
       } else {
-        resolve(null);
+        resolve(resProf);
       }
     });
 }
 
 //create an order
-export async function createOrder(order: Order) {
+export async function createOrder(order: Order) : Promise<OrderResponse>{
   const config = await getConfig();
   consoleLog(config, 'API call - createOrder');
     return new Promise(async function(resolve) {
@@ -323,16 +345,18 @@ export async function createOrder(order: Order) {
         EndPoints.orders;
 
       const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order));
+      var resOrder = new OrderResponse();
       if (responseText) {
-         resolve(responseText);
+        resOrder = responseText;
+         resolve(resOrder);
       }else {
-        resolve(null);
+        resolve(resOrder);
       }
     });
 }
 
 // get cards by mobile number
-export async function searchCards(mobile: string) {
+export async function searchCards(mobile: string) : Promise<CardList>{
   const config = await getConfig();
   consoleLog(config, 'API call - searchCards');
   return new Promise(async function(resolve) {
@@ -346,16 +370,18 @@ export async function searchCards(mobile: string) {
       mobile;
 
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resCardList = new CardList();
     if (responseText) {
-      resolve(responseText);
+      resCardList = responseText;
+      resolve(resCardList);
     } else {
-      resolve(null);
+      resolve(resCardList);
     }
   });
 }
 
 // get User Profile
-export async function getProfile(userId: string) {
+export async function getProfile(userId: string) : Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - getProfile');
   return new Promise(async function(resolve) {
@@ -368,16 +394,18 @@ export async function getProfile(userId: string) {
       '/' +
       userId;
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resProf = new Profile();
     if (responseText) {
+      resProf = responseText
       resolve(responseText);
     } else {
-      resolve(null);
+      resolve(resProf);
     }
   });
 }
 
 //update a user profile
-export async function updateProfile(user: Profile) {
+export async function updateProfile(user: Profile) : Promise<Profile>{
   const config = await getConfig();
   consoleLog(config, 'API call - updateProfile');
     if (user.id != null) {
@@ -391,10 +419,12 @@ export async function updateProfile(user: Profile) {
           '/' +
           user.id;
         const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, JSON.stringify(user));
+        var resProf = new Profile();
         if (responseText) {
-          resolve(responseText);
+          resProf = responseText
+          resolve(resProf);
         } else {
-          resolve(null);
+          resolve(resProf);
         }
       });
     } else {
@@ -402,7 +432,7 @@ export async function updateProfile(user: Profile) {
     }
 }
 
-export async function getOrders(user_id: string) {
+export async function getOrders(user_id: string) : Promise<OrderList>{
   const config = await getConfig();
   consoleLog(config, 'API call - getOrders');
 
@@ -417,15 +447,17 @@ export async function getOrders(user_id: string) {
     user_id;
 
     const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
+    var resOrderList = new OrderList();
     if (responseText) {
-      resolve(responseText);
+      resOrderList= responseText;
+      resolve(resOrderList);
     } else {
-      resolve(null);
+      resolve(resOrderList);
     }
   });
 }
 
-export async function cardCallBack(callBackUrl: string, token: string) {
+export async function cardCallBack(callBackUrl: string, token: string) : Promise<CardCallBackResponse>{
   const config = await getConfig();
   consoleLog(config, 'API call - cardCallBack');
   return new Promise(async function(resolve) {
@@ -433,11 +465,12 @@ export async function cardCallBack(callBackUrl: string, token: string) {
     const url = callBackUrl;
     const req = {"tokenId": token};
     const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(req));
-
+    var resCardCallBack = new CardCallBackResponse();
     if (responseText) {
-      resolve(responseText);
+      resCardCallBack = responseText;
+      resolve(resCardCallBack);
     } else {
-      resolve(null);
+      resolve(resCardCallBack);
     }
   });
 }

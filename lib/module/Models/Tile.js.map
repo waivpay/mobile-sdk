@@ -1,1 +1,0 @@
-{"version":3,"names":["Tile","constructor","name"],"sources":["Tile.ts"],"sourcesContent":["export class Tile {\n    name: string;\n  \n    constructor(name: string) {\n      this.name = name;\n    }\n  }\n  "],"mappings":";;AAAA,OAAO,MAAMA,IAAN,CAAW;EAGdC,WAAW,CAACC,IAAD,EAAe;IAAA;;IACxB,KAAKA,IAAL,GAAYA,IAAZ;EACD;;AALa"}

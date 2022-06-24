@@ -18,7 +18,23 @@ cd ios
 pod install
 ```
 
+## Run Sample
+
+iOS
+```sh
+npm run ios
+```
+
+Android
+```sh
+npm run android
+```
+
+Ensure that you have setup the android gradle as per documentation in the repository https://github.com/conn3cted/WaivpayReactNativeSDK/blob/master/WaivpaySDk.doc
+
 ## Usage
+
+Example on how to configure your application, see documentation for more APIs.
 
 ```js
 import {setConfig} from "waivpay-karta-sdk/src/ApiCall";
@@ -31,11 +47,3 @@ var appConfig = new AppConfig("client_id”, “client_secret”, “app_id”, 
 
 setConfig(appConfig);
 ```
-
-## Contributing
-
-See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
-
-## License
-
-MIT

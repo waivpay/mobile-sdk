@@ -52,8 +52,8 @@ repositories {
         url "http://nexus.conn3cted.net:8081/nexus/content/groups/public"
         allowInsecureProtocol = true
         credentials {
-            username "vicinity"
-            password "_vG87NCf#bnVyZCj"
+            username System.getenv("REPO_SDK_USER")
+            password System.getenv("REPO_SDK_PASSWORD")
         }
     }
     google()

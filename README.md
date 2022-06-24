@@ -4,8 +4,18 @@ A React Native SDK for Waivpay to Karta APIs that enable provisioning of digital
 
 ## Installation
 
+Using NPM
 ```sh
 npm install @conn3cted/waivpay-karta-sdk@0.1.0
+cd ios
+pod install
+```
+
+Using YARN
+```sh
+yarn add @conn3cted/waivpay-karta-sdk@0.1.0
+cd ios
+pod install
 ```
 
 ## Usage

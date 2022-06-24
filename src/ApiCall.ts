@@ -11,7 +11,7 @@ async function consoleLog(config: AppConfig, message: string) {
   }
 
 async function getConfig() {
-  let appConfig = new AppConfig('','','','');
+  let appConfig = new AppConfig();
   const config = await EncryptedStorage.getItem('waivpay_sdk_config_app_id');
   appConfig = JSON.parse(config || '{}');
   return appConfig;
@@ -84,7 +84,11 @@ export async function setConfig(appConfig:AppConfig) {
         environment != null &&
         environment !== 'undefined'
       ) {
-        appConfig = new AppConfig(client_id, client_secret, app_id, environment);
+        appConfig = new AppConfig();
+        appConfig.client_id=client_id;
+        appConfig.app_id=app_id;
+        appConfig.client_secret = client_secret;
+        appConfig.environment=environment;
         await EncryptedStorage.setItem(
           'waivpay_sdk_config_app_id',
           JSON.stringify(appConfig),

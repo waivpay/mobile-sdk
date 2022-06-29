@@ -49,7 +49,7 @@ repositories {
         url("$rootDir/../node_modules/react-native/android")
     }
     maven {
-        url "http://nexus.conn3cted.net:8081/nexus/content/repositories/Google-SDK"
+        url "http://nexus.conn3cted.net:8081/nexus/content/groups/googlesdk"
         allowInsecureProtocol = true
         credentials {
             username System.getenv("REPO_SDK_USER")

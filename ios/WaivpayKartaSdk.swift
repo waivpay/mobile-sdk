@@ -29,6 +29,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     let host_staging = "https://webstores-staging.herokuapp.com/";
     let host_production = "https://webstores.herokuapp.com/";
     var token = "";
+    var returnResult = false;
     
     @objc static func requiresMainQueueSetup() -> Bool {
         return false
@@ -78,21 +79,24 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
                     paymentPassRequest.encryptedPassData = Data(base64Encoded: addResponse.encryptedPassData, options: []);
                 
                 handler(paymentPassRequest);
+                
             } catch {
                 
             }
         }
         
         task.resume();
+        
 
     }
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
+        returnResult = true;
     }
 
     @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
-    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
         
          environment = env;
          appid = appId;
@@ -106,7 +110,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         requestConfig?.primaryAccountSuffix = cardSuffix;
         requestConfig?.paymentNetwork = PKPaymentNetwork(rawValue: "MASTERCARD");
         requestConfig?.primaryAccountIdentifier = getCardFPAN(cardSuffix);
-        
+   
         let passkitViewController = PKAddPaymentPassViewController.init(requestConfiguration: requestConfig!, delegate: self);
         DispatchQueue.main.async {
             var topMostViewController = UIApplication.shared.keyWindow?.rootViewController;
@@ -115,7 +119,11 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
             }
             topMostViewController?.present(passkitViewController!, animated:true, completion: nil);
         }
-        
+
+        while (!returnResult) {
+ 
+        }
+        returnResult = false;
         resolve(true);
     }
     

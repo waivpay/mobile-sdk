@@ -270,22 +270,11 @@ export async function getTransactions(cardId) {
 }
 
 // get cardDetails
-export async function getCardDetails(cardId, email) {
+export async function getCardDetails(cardId, email, mobile) {
   const config = await getConfig();
   consoleLog(config, 'API call - getCardDetails');
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
-
-    if (email != null) {
-      const url2 = getHostEndPoints(config) +
-        EndPoints.appSpecific +
-        config.app_id +
-        EndPoints.cards +
-        '/' +
-        cardId;
-      const data2 = { "email": email };
-      await sendToEndPoint(config, 'PUT', url2, accessToken, JSON.stringify(data2));
-    }
     
     const url =
       getHostEndPoints(config) +
@@ -298,6 +287,17 @@ export async function getCardDetails(cardId, email) {
     if (responseText) {
       let card = new Card();
       card = responseText;
+
+      if (email != null && mobile == responseText.delivery_sms_number) {
+        const url2 = getHostEndPoints(config) +
+          EndPoints.appSpecific +
+          config.app_id +
+          EndPoints.cards +
+          '/' +
+          responseText.card_id;
+        const data2 = { "email": email };
+        await sendToEndPoint(config, 'PUT', url2, accessToken, JSON.stringify(data2));
+      }
       resolve(card);
     } else {
       resolve(null);

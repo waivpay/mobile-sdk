@@ -1,5 +1,4 @@
 import { AppConfig } from './Models/AppConfig';
-import EncryptedStorage from 'react-native-encrypted-storage/lib/typescript/EncryptedStorage';
 import { EndPoints } from './util/ServerEndPoints';
 import { Profile } from './Models/Profile';
 import type { Order } from './Models/Order';
@@ -12,6 +11,7 @@ import { OrderResponse } from './Models/OrderResponse';
 import { CardList } from './Models/CardList';
 import { OrderList } from './Models/OrderList';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {

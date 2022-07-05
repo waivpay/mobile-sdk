@@ -21,9 +21,10 @@ export class Order {
   reference;
   created_at;
   total_cost;
+  payment_method;
 
 
-  constructor(delivery_option_id, email, phone_number, user_id, validate, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items, reference, created_at, total_cost) {
+  constructor(delivery_option_id, email, phone_number, user_id, validate, external_user_id, billing_same_address, recipient_address, credit_card_number, credit_card_name, credit_card_expiry_month, credit_card_expiry_year, credit_card_security_code, payment_token, billing_address, order_items, reference, created_at, total_cost, payment_method) {
     this.delivery_option_id = delivery_option_id;
     this.email = email;
     this.phone_number = phone_number;
@@ -43,6 +44,7 @@ export class Order {
     this.reference = reference;
     this.created_at = created_at;
     this.total_cost = total_cost;
+    this.payment_method = payment_method;
 
   }
 }

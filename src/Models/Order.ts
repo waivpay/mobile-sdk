@@ -23,4 +23,5 @@ export class Order {
   reference!: string;
   created_at!: string;
   total_cost!: string;
+  payment_method!: string;
 }

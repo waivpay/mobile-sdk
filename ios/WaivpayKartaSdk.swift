@@ -92,12 +92,15 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
+        if(pass != nil)
+        {
         returnResult = true;
+        }
     }
 
     @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
     func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
-        
+        returnResult = false;
          environment = env;
          appid = appId;
          cardNumber = cardId;
@@ -120,11 +123,14 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
             topMostViewController?.present(passkitViewController!, animated:true, completion: nil);
         }
 
-        while (!returnResult) {
- 
+        while (returnResult == false) {
+            print("waiting");
         }
-        returnResult = false;
-        resolve(true);
+        if(returnResult == true)
+        {
+            resolve(true);
+        }
+        
     }
     
     func getCardFPAN(_ cardSuffix: String?) -> String? {

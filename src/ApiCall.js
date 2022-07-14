@@ -275,7 +275,7 @@ export async function getCardDetails(cardId, email, mobile) {
   consoleLog(config, 'API call - getCardDetails');
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
-    
+
     const url =
       getHostEndPoints(config) +
       EndPoints.appSpecific +
@@ -296,7 +296,7 @@ export async function getCardDetails(cardId, email, mobile) {
           '/' +
           responseText.card_id;
         const data2 = { "email": email };
-        await sendToEndPoint(config, 'PUT', url2, accessToken, JSON.stringify(data2));
+        await sendToEndPoint(config, 'PUT', url2, accessToken, data2);
       }
       resolve(card);
     } else {

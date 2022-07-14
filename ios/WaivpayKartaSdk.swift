@@ -30,6 +30,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     let host_production = "https://webstores.herokuapp.com/";
     var token = "";
     var returnResult = false;
+    var addToWalletResponse = false;
     
     @objc static func requiresMainQueueSetup() -> Bool {
         return false
@@ -92,10 +93,12 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
 
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
-        if(pass != nil)
-        {
-        returnResult = true;
+        if(pass != nil) {
+            addToWalletResponse = true;
+        } else {
+            addToWalletResponse = false;
         }
+        returnResult = true;
     }
 
     @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
@@ -126,9 +129,8 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         while (returnResult == false) {
             print("waiting");
         }
-        if(returnResult == true)
-        {
-            resolve(true);
+        if(returnResult == true) {
+            resolve(addToWalletResponse);
         }
         
     }

@@ -9,10 +9,11 @@ import { TransactionList } from './Models/TransactionList';
 import { CardList } from './Models/CardList';
 import { Card } from './Models/Card';
 import { Profile } from './Models/Profile';
+import { ErrorResponse } from './Models/ErrorResponse';
 import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
 import { OrderResponse } from './Models/OrderResponse';
-import {OrderList, Orders} from './Models/OrderList'
+import { OrderList } from './Models/OrderList';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 
@@ -65,32 +66,93 @@ function getHostEndPointsCashback(config) {
   }
 }
 
-async function sendToEndPoint(config, accessType, url, accessToken, data) {
+async function sendToEndPointString(config, accessType, url, accessToken, data) {
   consoleLog(config, '_________________________________________');
   consoleLog(config, 'sendToEndPoint ' + accessType + ' ' + url + ' ' + accessToken);
   consoleLog(config, 'Request');
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
+
   const response = await fetch(url, {
     method: accessType,
     headers: {
       'Authorization': authorization,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data, replacer)
+    body: data,
+  }).catch((e) => {
+    reject("Unable to process request");
   });
-
-  if (!response.ok) {
-    const message = `An error has occured: ${response.status}`;
-    throw new Error(message);
-  }
 
   const responseText = await response.json();
   consoleLog(config, 'Response');
   consoleLog(config, responseText);
   consoleLog(config, '_________________________________________');
-  return responseText;
+
+  if (response.ok) {
+    alert('Good - Inner');
+    return responseText;
+  } else {
+    alert('Error - Inner');
+    alert(JSON.stringify(responseText));
+    reject(new Error("Error " + JSON.stringify(responseText)));
+  }
 }
+
+export async function sendString(order) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - createOrder');
+
+  return new Promise(async function(resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.orders;
+
+    await sendToEndPointString(config, 'POST', url, accessToken, order).then(
+      function(value) {
+        alert('Good - Outer ' + value);
+        resolve(value);
+      }
+    ).catch((e) => {
+      alert('Error - Outer ');
+      reject("Unable to process request");
+    });
+  });
+}
+
+async function sendToEndPoint(config, accessType, url, accessToken, data) {
+  consoleLog(config, '_________________________________________');
+  consoleLog(config, 'sendToEndPoint ' + accessType + ' ' + url + ' ' + accessToken);
+  consoleLog(config, 'Request');
+  consoleLog(config, data);
+  const authorization = 'Bearer ' + accessToken;
+
+  const response = await fetch(url, {
+    method: accessType,
+    headers: {
+      'Authorization': authorization,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data, replacer),
+  }).catch((e) => {
+    reject("Unable to process request");
+  });
+
+  const responseText = await response.json();
+  consoleLog(config, 'Response');
+  consoleLog(config, responseText);
+  consoleLog(config, '_________________________________________');
+
+  if (response.ok) {
+    return responseText;
+  } else {
+    reject(new Error("Error " + JSON.stringify(responseText)));
+  }
+}
+
 
 //sets client key,  client secret and app_id in EncryptedStorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig) {
@@ -130,14 +192,14 @@ export async function sendTwoFactor(mobile) {
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
-    const data = { "mobile_number": mobile };
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, data);
-    if (responseText) {
-      EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
-      resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    const data = { 'mobile_number': mobile };
+    await sendToEndPoint(config, 'POST', url, accessToken, data).then(
+      function(responseText) {
+        EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
+        resolve(responseText);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -148,17 +210,16 @@ export async function verifyTwoFactor(code) {
     const verificationId = await EncryptedStorage.getItem('waivpay_sdk_verificationId');
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
-    const data = {verification_code: code};
+    const data = { verification_code: code };
 
-    const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, data);
-    if (responseText) {
-      resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'PUT', url, accessToken, data).then (
+      function(responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
-
 
 // get App Details
 export async function getBrand() {
@@ -167,22 +228,23 @@ export async function getBrand() {
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let app = new Brand('', '', [], '');
-      app = responseText.app;
-      const locs = [];
-      const locations = responseText.app.locations;
-      for (let i = 0; i < locations.length; i++) {
-        let location = new Location();
-        location = locations[i];
-        locs.push(location);
-      }
-      app.locations = locs;
-      resolve(app);
-    } else {
-      resolve(null);
-    }
+
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let app = new Brand('', '', [], '');
+        app = responseText.app;
+        const locs = [];
+        const locations = responseText.app.locations;
+        for (let i = 0; i < locations.length; i++) {
+          let location = new Location();
+          location = locations[i];
+          locs.push(location);
+        }
+        app.locations = locs;
+        resolve(app);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -195,20 +257,20 @@ export async function getCatalogue() {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      const cat = new Catalogue([]);
-      let prods = [];
-      prods = responseText.products;
-      for (let i = 0; i < prods.length; i++) {
-        let prod = new Product();
-        prod = prods[i];
-        cat.products.push(prod);
-      }
-      resolve(cat);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        const cat = new Catalogue([]);
+        let prods = [];
+        prods = responseText.products;
+        for (let i = 0; i < prods.length; i++) {
+          let prod = new Product();
+          prod = prods[i];
+          cat.products.push(prod);
+        }
+        resolve(cat);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -227,14 +289,14 @@ export async function getBalance(cardId) {
       cardId +
       EndPoints.balance;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let bal = new Balance();
-      bal = responseText;
-      resolve(bal);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let bal = new Balance();
+        bal = responseText;
+        resolve(bal);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -252,20 +314,20 @@ export async function getTransactions(cardId) {
       '/' +
       cardId +
       EndPoints.transaction;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let transs = [];
-      let transactionList = new TransactionList([]);
-      transs = responseText.transactions;
-      for (let x = 0; x < transs.length; x++) {
-        let transaction = new Transaction();
-        transaction = transs[x];
-        transactionList.transactions.push(transaction);
-      }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let transs = [];
+        let transactionList = new TransactionList([]);
+        transs = responseText.transactions;
+        for (let x = 0; x < transs.length; x++) {
+          let transaction = new Transaction();
+          transaction = transs[x];
+          transactionList.transactions.push(transaction);
+        }
       resolve(transactionList);
-    } else {
-      resolve(null);
-    }
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -283,25 +345,25 @@ export async function getCardDetails(cardId, email, mobile) {
       EndPoints.cards +
       '/' +
       cardId;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let card = new Card();
-      card = responseText;
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let card = new Card();
+        card = responseText;
 
-      if (email != null && mobile == responseText.delivery_sms_number) {
-        const url2 = getHostEndPoints(config) +
-          EndPoints.appSpecific +
-          config.app_id +
-          EndPoints.cards +
-          '/' +
-          responseText.card_id;
-        const data2 = { "email": email };
-        await sendToEndPoint(config, 'PUT', url2, accessToken, data2);
-      }
-      resolve(card);
-    } else {
-      resolve(null);
-    }
+        if (email != null && mobile == responseText.delivery_sms_number) {
+          const url2 = getHostEndPoints(config) +
+            EndPoints.appSpecific +
+            config.app_id +
+            EndPoints.cards +
+            '/' +
+            responseText.card_id;
+          const data2 = { 'email': email };
+           sendToEndPoint(config, 'PUT', url2, accessToken, data2);
+        }
+        resolve(card);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -318,17 +380,17 @@ export async function createProfile(user) {
         config.app_id +
         EndPoints.users;
 
-      const responseText = await sendToEndPoint(config, 'POST', url, accessToken, user);
-      if (responseText) {
-        let profile = new Profile();
-        profile = responseText.user;
-        resolve(profile);
-      } else {
-        resolve(null);
-      }
+      await sendToEndPoint(config, 'POST', url, accessToken, user).then (
+        function(responseText) {
+          let profile = new Profile();
+          profile = responseText.user;
+          resolve(profile);
+        }).catch((e) => {
+        reject("Unable to process request");
+      });
     });
   } else {
-    throw 'Please pass object of type Profile';
+    reject('Please pass object of type Profile');
   }
 }
 
@@ -345,23 +407,23 @@ export async function createOrder(order) {
         config.app_id +
         EndPoints.orders;
 
-      const responseText = await sendToEndPoint(config, 'POST', url, accessToken, order);
-      if (responseText) {
-        let orderResponse = new OrderResponse();
-        if (responseText.error != 'undefined' && responseText.error != null) {
-          orderResponse.error = responseText.error;
-          orderResponse.hasError = true;
-        } else {
-          orderResponse = responseText;
-        }
+      await sendToEndPoint(config, 'POST', url, accessToken, order).then (
+        function(responseText) {
+          let orderResponse = new OrderResponse();
+          if (responseText.error != 'undefined' && responseText.error != null) {
+            orderResponse.error = responseText.error;
+            orderResponse.hasError = true;
+          } else {
+            orderResponse = responseText;
+          }
 
-        resolve(orderResponse);
-      } else {
-        resolve(null);
-      }
+          resolve(orderResponse);
+        }).catch((e) => {
+        reject("Unable to process request");
+      });
     });
   } else {
-    throw 'Please pass object of type Order';
+    reject('Please pass object of type Order');
   }
 }
 
@@ -379,20 +441,20 @@ export async function searchCards(mobile) {
       '?mobile_number=' +
       mobile;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let cards = [];
-      const cardList = new CardList([]);
-      cards = responseText.cards;
-      for (let i = 0; i < cards.length; i++) {
-        let card = new Card();
-        card = cards[i];
-        cardList.cards.push(card);
-      }
-      resolve(cardList);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let cards = [];
+        const cardList = new CardList([]);
+        cards = responseText.cards;
+        for (let i = 0; i < cards.length; i++) {
+          let card = new Card();
+          card = cards[i];
+          cardList.cards.push(card);
+        }
+        resolve(cardList);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -409,14 +471,14 @@ export async function getProfile(userId) {
       EndPoints.users +
       '/' +
       userId;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      let profile = new Profile();
-      profile = responseText.user;
-      resolve(profile);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        let profile = new Profile();
+        profile = responseText.user;
+        resolve(profile);
+    }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -435,20 +497,20 @@ export async function updateProfile(user) {
           EndPoints.users +
           '/' +
           user.id;
-        const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, user);
-        if (responseText) {
-          let profile = new Profile();
-          profile = responseText.user;
-          resolve(profile);
-        } else {
-          resolve(null);
-        }
+        await sendToEndPoint(config, 'PUT', url, accessToken, user).then (
+          function(responseText) {
+            let profile = new Profile();
+            profile = responseText.user;
+            resolve(profile);
+          }).catch((e) => {
+          reject("Unable to process request");
+        });
       });
     } else {
-      throw 'Please provide an id for the user';
+      reject('Please provide an id for the user');
     }
   } else {
-    throw 'Please pass object of type Profile';
+    reject('Please pass object of type Profile');
   }
 }
 
@@ -459,45 +521,45 @@ export async function getOrders(user_id) {
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
-    getHostEndPoints(config) +
-    EndPoints.appSpecific +
-    config.app_id +
-    EndPoints.orders +
-    "?user_id=" +
-    user_id;
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.orders +
+      '?user_id=' +
+      user_id;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
-      const orderList = new OrderList([]);
-      let orders = [];
-      orders = responseText.orders;
-      for (let i = 0; i < orders.length; i++) {
-        let order = new Order();
-        order = orders[i];
-        orderList.orders.push(order);
-      }
-      resolve(orderList);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+        const orderList = new OrderList([]);
+        let orders = [];
+        orders = responseText.orders;
+        for (let i = 0; i < orders.length; i++) {
+          let order = new Order();
+          order = orders[i];
+          orderList.orders.push(order);
+        }
+        resolve(orderList);
+      }).catch((e) => {
+        reject("Unable to process request");
+    });
   });
 }
+
 export async function cardCallBack(callBackUrl, token) {
   const config = await getConfig();
   consoleLog(config, 'API call - cardCallBack');
   return new Promise(async function(resolve, reject) {
     const accessToken = token;
     const url = callBackUrl;
-    const req = {"tokenId": token};
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, req);
-
-    if (responseText) {
-      let carCallBackResponse = new CardCallBackResponse();
-      carCallBackResponse = responseText;
-      resolve(carCallBackResponse);
-    } else {
-      resolve(null);
-    }
+    const req = { 'tokenId': token };
+    await sendToEndPoint(config, 'POST', url, accessToken, req).then (
+      function(responseText) {
+        let carCallBackResponse = new CardCallBackResponse();
+        carCallBackResponse = responseText;
+        resolve(carCallBackResponse);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -523,12 +585,12 @@ export async function fileUpload(fileInput) {
     const data = new FormData();
     data.append('file', fileInput.files[0], fileInput.files[0].name);
 
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, data);
-    if (responseText) {
-      resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'POST', url, accessToken, data).then (
+      function(responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -544,12 +606,12 @@ export async function listPromotions() {
       config.app_id +
       EndPointsCashBack.promotions;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
       resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -599,12 +661,12 @@ export async function getPromotion(promotionId) {
       '/' +
       promotionId;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
+    sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
       resolve(responseText);
-    } else {
-      resolve(null);
-    }
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -622,13 +684,12 @@ export async function createClaim(claim, promotionId) {
       promotionId +
       EndPointsCashBack.claims;
 
-    const data = JSON.stringify(claim);
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, data);
-    if (responseText) {
+     await sendToEndPoint(config, 'POST', url, accessToken, claim).then (
+      function(responseText) {
       resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 
@@ -645,12 +706,12 @@ export async function getClaims(external_user_id) {
       '?external_user_id=' +
       external_user_id;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null);
-    if (responseText) {
+    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
       resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    }).catch((e) => {
+      reject("Unable to process request");
+    });
   });
 }
 

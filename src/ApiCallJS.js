@@ -125,7 +125,7 @@ export async function sendString(order) {
 
 async function sendToEndPoint(config, accessType, url, accessToken, data) {
   consoleLog(config, '_________________________________________');
-  consoleLog(config, 'sendToEndPoint ' + accessType + ' ' + url + ' ' + accessToken);
+  consoleLog(config, 'sendToEndPoint JS ' + accessType + ' ' + url + ' ' + accessToken);
   consoleLog(config, 'Request');
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
@@ -137,8 +137,8 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(data, replacer),
-  }).catch((e) => {
-    reject("Unable to process request");
+  }).catch((error) => {
+    reject(error);
   });
 
   const responseText = await response.json();
@@ -152,7 +152,6 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
     reject(new Error("Error " + JSON.stringify(responseText)));
   }
 }
-
 
 //sets client key,  client secret and app_id in EncryptedStorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig) {
@@ -198,7 +197,7 @@ export async function sendTwoFactor(mobile) {
         EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
         resolve(responseText);
       }).catch((e) => {
-      reject("Unable to process request");
+      reject(e);
     });
   });
 }

@@ -41,38 +41,32 @@ function getHostEndPoints(config: AppConfig) {
   }
 }
 
-// function replacer(key: string, value: string) {
-//   console.log(key);
-//   if (value == 'undefined') return undefined;
-//   else if (value == null) return undefined;
-//   else return value;
-// }
-
-
-async function sendToEndPoint(config: AppConfig, accessType: string, url: string, accessToken: String, data: string) {
+async function sendToEndPoint(config: AppConfig, accessType: string, url: string, accessToken: String, data: string): Promise<any> {
   consoleLog(config, '_________________________________________');
-  consoleLog(config, 'sendToEndPoint ' + accessType + ' ' + url + ' ' + accessToken);
+  consoleLog(config, 'sendToEndPoint TS ' + accessType + ' ' + url + ' ' + accessToken);
   consoleLog(config, 'Request');
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
+
   const response = await fetch(url, {
     method: accessType,
     headers: {
       'Authorization': authorization,
       'Content-Type': 'application/json',
     },
-    body: data
+    body: data,
+  }).catch((error) => {
+    throw (error);
   });
-
-  if (!response.ok) {
-    const message = `An error has occured: ${response.status}`;
-    throw new Error(message);
-  }
 
   const responseText = await response.json();
   consoleLog(config, 'Response');
   consoleLog(config, responseText);
   consoleLog(config, '_________________________________________');
+
+  if (!response.ok) {
+    throw new Error(JSON.stringify(responseText));
+  }
   return responseText;
 }
 
@@ -164,35 +158,33 @@ export async function getAccessToken() {
 export async function sendTwoFactor(mobile: string) {
   const config = await getConfig();
   consoleLog(config, 'API call - sendTwoFactor');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
-    const data = { "mobile_number": mobile };
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data));
-    if (responseText) {
-      EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
-      resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    const data = { 'mobile_number': mobile };
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data)).then(response => {
+      EncryptedStorage.setItem('waivpay_sdk_verificationId', response.verification_id.toString());
+      resolve(response);
+    }).catch((error) => {
+      reject(error);
+    });
   });
 }
 
 export async function verifyTwoFactor(code: string) {
   const config = await getConfig();
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
     const verificationId = await EncryptedStorage.getItem('waivpay_sdk_verificationId');
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
     const data = { verification_code: code };
 
-    const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, JSON.stringify(data));
-    if (responseText) {
-      resolve(responseText);
-    } else {
-      resolve(null);
-    }
+    await sendToEndPoint(config, 'PUT', url, accessToken, JSON.stringify(data)).then(response => {
+      resolve(response);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -200,18 +192,16 @@ export async function verifyTwoFactor(code: string) {
 export async function getBrand(): Promise<Brand> {
   const config = await getConfig();
   consoleLog(config, 'API call - getBrand');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, "");
-    var resBrand = new Brand();
-    if (responseText) {
-
-      resBrand = responseText;
-      resolve(responseText);
-    } else {
-      resolve(resBrand);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Brand();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -220,25 +210,24 @@ export async function getCatalogue(): Promise<Catalogue> {
   const config = await getConfig();
   consoleLog(config, 'API call - getCatalogue');
 
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, "");
-    var resCat = new Catalogue();
-    if (responseText) {
-      resCat = responseText;
-      resolve(resCat);
-    } else {
-      resolve(resCat);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Catalogue();
+      responseObject = response;
+        resolve(responseObject);
+    }).catch((error: Error) => {
+        reject(error);
+    });
   });
 }
 
 export async function getBalance(cardId: string): Promise<Balance> {
   const config = await getConfig();
   consoleLog(config, 'API call - getBalance');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -249,14 +238,13 @@ export async function getBalance(cardId: string): Promise<Balance> {
       cardId +
       EndPoints.balance;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resBal = new Balance();
-    if (responseText) {
-      resBal = responseText;
-      resolve(resBal);
-    } else {
-      resolve(resBal);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Balance();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -264,7 +252,7 @@ export async function getBalance(cardId: string): Promise<Balance> {
 export async function getTransactions(cardId: string): Promise<Transaction> {
   const config = await getConfig();
   consoleLog(config, 'API call - getTransactions');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -274,14 +262,13 @@ export async function getTransactions(cardId: string): Promise<Transaction> {
       '/' +
       cardId +
       EndPoints.transaction;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resTrans = new Transaction();
-    if (responseText) {
-      resTrans = responseText;
-      resolve(resTrans);
-    } else {
-      resolve(resTrans);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Transaction();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -289,7 +276,7 @@ export async function getTransactions(cardId: string): Promise<Transaction> {
 export async function getCardDetails(cardId: string, email: string, mobile: string): Promise<Card> {
   const config = await getConfig();
   consoleLog(config, 'API call - getCardDetails');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -298,25 +285,25 @@ export async function getCardDetails(cardId: string, email: string, mobile: stri
       EndPoints.cards +
       '/' +
       cardId;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resCard = new Card();
-    if (responseText) {
-      resCard = responseText;
-      //check if email is passed
-    if (email != null && mobile == responseText.delivery_sms_number) {
-      const url2 = getHostEndPoints(config) +
-        EndPoints.appSpecific +
-        config.app_id +
-        EndPoints.cards +
-        '/' +
-        responseText.card_id;
-      const data2 = { "email": email };
-      await sendToEndPoint(config, 'PUT', url2, accessToken, JSON.stringify(data2));
-    }
-      resolve(resCard);
-    } else {
-      resolve(resCard);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Card();
+      responseObject = response;
+      if (email != null && mobile == responseObject.delivery_sms_number) {
+        const url2 = getHostEndPoints(config) +
+          EndPoints.appSpecific +
+          config.app_id +
+          EndPoints.cards +
+          '/' +
+          responseObject.card_id;
+        const data2 = { 'email': email };
+        sendToEndPoint(config, 'PUT', url2, accessToken, JSON.stringify(data2)).catch((error2: Error) => {
+          consoleLog(config, 'Update failed ' + error2);
+        });
+      }
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -324,7 +311,7 @@ export async function getCardDetails(cardId: string, email: string, mobile: stri
 export async function createProfile(user: Profile): Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - createProfile');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -332,14 +319,13 @@ export async function createProfile(user: Profile): Promise<Profile> {
       config.app_id +
       EndPoints.users;
 
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(user));
-    var resProf = new Profile();
-    if (responseText) {
-      resProf = responseText;
-      resolve(resProf);
-    } else {
-      resolve(resProf);
-    }
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(user)).then(response => {
+      let responseObject = new Profile();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -347,7 +333,7 @@ export async function createProfile(user: Profile): Promise<Profile> {
 export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
   consoleLog(config, 'API call - createOrder');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -355,14 +341,13 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
       config.app_id +
       EndPoints.orders;
 
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order));
-    var resOrder = new OrderResponse();
-    if (responseText) {
-      resOrder = responseText;
-      resolve(resOrder);
-    } else {
-      resolve(resOrder);
-    }
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order)).then(response => {
+      let responseObject = new OrderResponse();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -370,7 +355,7 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
 export async function searchCards(mobile: string): Promise<CardList> {
   const config = await getConfig();
   consoleLog(config, 'API call - searchCards');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -380,14 +365,13 @@ export async function searchCards(mobile: string): Promise<CardList> {
       '?mobile_number=' +
       mobile;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resCardList = new CardList();
-    if (responseText) {
-      resCardList = responseText;
-      resolve(resCardList);
-    } else {
-      resolve(resCardList);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new CardList();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -395,7 +379,7 @@ export async function searchCards(mobile: string): Promise<CardList> {
 export async function getProfile(userId: string): Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - getProfile');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -404,14 +388,13 @@ export async function getProfile(userId: string): Promise<Profile> {
       EndPoints.users +
       '/' +
       userId;
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resProf = new Profile();
-    if (responseText) {
-      resProf = responseText
-      resolve(responseText);
-    } else {
-      resolve(resProf);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Profile();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
@@ -420,7 +403,7 @@ export async function updateProfile(user: Profile): Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - updateProfile');
   if (user.id != null) {
-    return new Promise(async function (resolve) {
+    return new Promise(async function(resolve, reject) {
       const accessToken = await getAccessToken();
       const url =
         getHostEndPoints(config) +
@@ -429,14 +412,13 @@ export async function updateProfile(user: Profile): Promise<Profile> {
         EndPoints.users +
         '/' +
         user.id;
-      const responseText = await sendToEndPoint(config, 'PUT', url, accessToken, JSON.stringify(user));
-      var resProf = new Profile();
-      if (responseText) {
-        resProf = responseText
-        resolve(resProf);
-      } else {
-        resolve(resProf);
-      }
+      await sendToEndPoint(config, 'PUT', url, accessToken, JSON.stringify(user)).then(response => {
+        let responseObject = new Profile();
+        responseObject = response;
+        resolve(responseObject);
+      }).catch((error: Error) => {
+        reject(error);
+      });
     });
   } else {
     throw 'Please provide an id for the user';
@@ -447,41 +429,39 @@ export async function getOrders(user_id: string): Promise<OrderList> {
   const config = await getConfig();
   consoleLog(config, 'API call - getOrders');
 
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
       EndPoints.appSpecific +
       config.app_id +
       EndPoints.orders +
-      "?user_id=" +
+      '?user_id=' +
       user_id;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, '');
-    var resOrderList = new OrderList();
-    if (responseText) {
-      resOrderList = responseText;
-      resolve(resOrderList);
-    } else {
-      resolve(resOrderList);
-    }
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+        let responseObject = new OrderList();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
   });
 }
 
 export async function cardCallBack(callBackUrl: string, token: string): Promise<CardCallBackResponse> {
   const config = await getConfig();
   consoleLog(config, 'API call - cardCallBack');
-  return new Promise(async function (resolve) {
+  return new Promise(async function(resolve, reject) {
     const accessToken = token;
     const url = callBackUrl;
-    const req = { "tokenId": token };
-    const responseText = await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(req));
-    var resCardCallBack = new CardCallBackResponse();
-    if (responseText) {
-      resCardCallBack = responseText;
-      resolve(resCardCallBack);
-    } else {
-      resolve(resCardCallBack);
-    }
+    const req = { tokenId: token };
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(req)).then(response => {
+        let responseObject = new CardCallBackResponse();
+        responseObject = response;
+        resolve(responseObject);
+    }).catch((error: Error) => {
+        reject(error);
+    });
   });
 }

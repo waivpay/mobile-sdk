@@ -1,6 +1,6 @@
 {
   "name": "@conn3cted/waivpay-karta-sdk",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "An React Native SDK for Waivpay to Karta APIs that enable provisioning of digital cards for iOS and Android",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

@@ -7,5 +7,6 @@ export class OrderResponse {
     delivery_fee!: string;
     error!: string;
     hasError!: boolean;
+    stripe_client_secret!: string;
 }
   

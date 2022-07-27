@@ -700,7 +700,7 @@ export async function getClaims(external_user_id) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
-      EndPointsCashBack.api +
+      EndPointsCashBack._api +
       EndPointsCashBack.claims +
       '?external_user_id=' +
       external_user_id;

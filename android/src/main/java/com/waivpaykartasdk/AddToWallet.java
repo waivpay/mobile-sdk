@@ -3,12 +3,21 @@ package com.waivpaykartasdk;
 import android.app.Activity;
 import android.util.Base64;
 import android.util.Log;
+import android.app.Application;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.facebook.react.bridge.Promise;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
+import org.json.JSONObject;
+import com.google.android.gms.wallet.IsReadyToPayRequest;
+import com.google.android.gms.wallet.PaymentsClient;
+import com.google.android.gms.wallet.Wallet;
+
+
+import com.google.android.gms.wallet.WalletConstants;
 import com.google.common.io.BaseEncoding;
 
 import java.util.Locale;
@@ -23,9 +32,16 @@ import okhttp3.Response;
 
 public class AddToWallet {
 //    public class AddToWallet extends AppCompatActivity {
+// A client for interacting with the Google Pay API.
+   private  PaymentsClient paymentsClient;
+
 
     public static final String HOST_STAGING = "https://webstores-staging.herokuapp.com/";
     public static final String HOST_PRODUCTION = "https://webstores.herokuapp.com/";
+
+    public AddToWallet() {
+
+    }
 
     public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Activity activity) {
         try {
@@ -94,5 +110,42 @@ public class AddToWallet {
             Log.e("KLHERE",e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void checkIfReadyToPay(String jsonReq, String environT , Activity activity, Promise promise) {
+
+         int environ = WalletConstants.ENVIRONMENT_TEST;
+        if (environT.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
+            environ = WalletConstants.ENVIRONMENT_PRODUCTION;
+        }
+
+        Wallet.WalletOptions walletOptions =
+                new Wallet.WalletOptions.Builder().setEnvironment(environ).build();
+
+        paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
+//       String jsonStringReq = "{\n" +
+//               "  \"apiVersion\": 2,\n" +
+//               "  \"apiVersionMinor\": 0,\n" +
+//               "  \"allowedPaymentMethods\": [\n" +
+//               "    {\n" +
+//               "      \"type\": \"CARD\",\n" +
+//               "      \"parameters\": {\n" +
+//               "        \"allowedAuthMethods\": [\"PAN_ONLY\", \"CRYPTOGRAM_3DS\"],\n" +
+//               "        \"allowedCardNetworks\": [\"AMEX\", \"DISCOVER\", \"INTERAC\", \"JCB\", \"MASTERCARD\", \"MIR\", \"VISA\"]\n" +
+//               "      }\n" +
+//               "    }\n" +
+//               "  ]\n" +
+//               "}";
+
+        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(jsonReq);
+       paymentsClient.isReadyToPay(request).addOnCompleteListener(completedTask -> {
+           if (completedTask.isSuccessful()) {
+               promise.resolve(true);
+           } else {
+               Log.w("isReadyToPay failed", completedTask.getException());
+               promise.resolve(false);
+           }
+       });
+
     }
 }

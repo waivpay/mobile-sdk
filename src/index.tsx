@@ -24,3 +24,7 @@ export function addCard(cardId: String, cardSuffix: String, cardHolder: String, 
 export function cardExists(cardId: String): Promise<String> {
   return WaivpayKartaSdk.cardExists(cardId);
 }
+
+export function checkIfReadyToPay(jsonReq: String, environment: String): Promise<String> {
+  return WaivpayKartaSdk.checkIfReadyToPay(jsonReq, environment);
+}

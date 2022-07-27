@@ -1,10 +1,19 @@
 package com.waivpaykartasdk;
 
 import android.app.Activity;
+import android.util.Log;
 
+import com.facebook.react.bridge.Promise;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
+import org.json.JSONObject;
+import com.google.android.gms.wallet.IsReadyToPayRequest;
+import com.google.android.gms.wallet.PaymentsClient;
+import com.google.android.gms.wallet.Wallet;
+
+
+import com.google.android.gms.wallet.WalletConstants;
 import com.google.common.io.BaseEncoding;
 
 import java.util.Locale;
@@ -18,9 +27,12 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class AddToWallet {
-
     public static final String HOST_STAGING = "https://webstores-staging.herokuapp.com/";
     public static final String HOST_PRODUCTION = "https://webstores.herokuapp.com/";
+
+    public AddToWallet() {
+
+    }
 
     public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Activity activity) {
         try {
@@ -69,5 +81,28 @@ public class AddToWallet {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void checkIfReadyToPay(String jsonReq, String environT , Activity activity, Promise promise) {
+
+         int environ = WalletConstants.ENVIRONMENT_TEST;
+        if (environT.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
+            environ = WalletConstants.ENVIRONMENT_PRODUCTION;
+        }
+
+        Wallet.WalletOptions walletOptions =
+                new Wallet.WalletOptions.Builder().setEnvironment(environ).build();
+
+        PaymentsClientpaymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
+        IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(jsonReq);
+       paymentsClient.isReadyToPay(request).addOnCompleteListener(completedTask -> {
+           if (completedTask.isSuccessful()) {
+               promise.resolve(true);
+           } else {
+               Log.w("isReadyToPay failed", completedTask.getException());
+               promise.resolve(false);
+           }
+       });
+
     }
 }

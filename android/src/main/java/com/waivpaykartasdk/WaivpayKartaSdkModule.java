@@ -30,6 +30,16 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
     public static native boolean nativeCardExists(String cardId);
 
     @ReactMethod
+    public void checkIfReadyToPay(String jsonReq, String env,  Promise promise) {
+        Log.e("TCHERE","checkIfReadyToPay");
+        AddToWallet addToWallet = new AddToWallet();
+        addToWallet.checkIfReadyToPay(jsonReq, env ,getCurrentActivity(),  promise);
+        promise.resolve(false);
+    }
+
+    public static native boolean nativeCheckIfReadyToPay(String jsonReq, String env);
+
+    @ReactMethod
     public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Promise promise) {
         try {
             AddToWallet addToWallet = new AddToWallet();

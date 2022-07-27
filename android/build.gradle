@@ -4,6 +4,8 @@ buildscript {
             google()
             mavenCentral()
             jcenter()
+            maven { url 'https://jitpack.io' }
+            maven { url "file:/$rootDir/privateMavenRepository" }
         }
 
         dependencies {
@@ -48,14 +50,8 @@ repositories {
         // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
         url("$rootDir/../node_modules/react-native/android")
     }
-    maven {
-        url "http://nexus.conn3cted.net:8081/nexus/content/groups/public"
-        allowInsecureProtocol = true
-        credentials {
-            username System.getenv("REPO_SDK_USER")
-            password System.getenv("REPO_SDK_PASSWORD")
-        }
-    }
+    maven { url 'https://jitpack.io' }
+    maven { url "file:/$rootDir/privateMavenRepository" }
     google()
     mavenCentral()
     jcenter()
@@ -63,7 +59,9 @@ repositories {
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation 'com.google.android.gms:play-services-tapandpay:18.2.0'
+    implementation "com.facebook.react:react-native:+"  // From node_modules
+    implementation 'com.google.android.gms:play-services-base:18.0.1'
+    implementation 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     implementation 'com.google.guava:guava:15.0'
 }

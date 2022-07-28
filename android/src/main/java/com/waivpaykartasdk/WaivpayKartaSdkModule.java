@@ -31,7 +31,6 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void checkIfReadyToPay(String jsonReq, String env,  Promise promise) {
-        Log.e("TCHERE","checkIfReadyToPay");
         AddToWallet addToWallet = new AddToWallet();
         addToWallet.checkIfReadyToPay(jsonReq, env ,getCurrentActivity(),  promise);
         promise.resolve(false);

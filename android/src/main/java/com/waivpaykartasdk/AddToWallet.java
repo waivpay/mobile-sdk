@@ -7,12 +7,9 @@ import com.facebook.react.bridge.Promise;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
-import org.json.JSONObject;
 import com.google.android.gms.wallet.IsReadyToPayRequest;
-import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.Wallet;
-
-
+import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.WalletConstants;
 import com.google.common.io.BaseEncoding;
 
@@ -93,7 +90,7 @@ public class AddToWallet {
         Wallet.WalletOptions walletOptions =
                 new Wallet.WalletOptions.Builder().setEnvironment(environ).build();
 
-        PaymentsClientpaymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
+        PaymentsClient paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
         IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(jsonReq);
        paymentsClient.isReadyToPay(request).addOnCompleteListener(completedTask -> {
            if (completedTask.isSuccessful()) {

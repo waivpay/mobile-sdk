@@ -776,6 +776,25 @@ export async function getAccessToken() {
   }
 }
 
+// get Promotion
+export async function getClaimDetails(claimId, promotionId) {
+  const config = await getConfigCashBack();
+  consoleLog(config, 'API call - getPromotion');
+  return new Promise(async function(resolve, reject) {
+    const accessToken = await getAccessTokenCashBack();
+    const url =
+      getHostEndPointsCashback(config) +
+      EndPointsCashBack._api + EndPointsCashBack.promotions + '/' + promotionId  + EndPointsCashBack.claims + '/' + claimId;
+
+    sendToEndPoint(config, 'GET', url, accessToken, null).then (
+      function(responseText) {
+      resolve(responseText);
+      }).catch((e) => {
+      reject("Unable to process request");
+    });
+  });
+}
+
 // function to get an access token by authenticating with CashBack Api
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
 

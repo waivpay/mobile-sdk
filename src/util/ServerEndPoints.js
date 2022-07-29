@@ -1,6 +1,6 @@
 export const EndPoints = {
   host_staging: 'https://webstores-staging.herokuapp.com',
-  host_prod: 'https://webstores.herokuapp.com',
+  host_prod: 'https://webstore.egivv.com',
   accessToken: '/oauth/token',
   appSpecific: '/api/apps/',
   getVerificationCode: '/verifications',
@@ -16,7 +16,7 @@ export const EndPoints = {
 
 export const EndPointsCashBack = {
   host_staging: 'https://cashback-engine-staging.herokuapp.com',
-  host_prod: 'https://cashback-engine.herokuapp.com',
+  host_prod: 'https://engine.cashback.com.au',
   accessToken: '/oauth/token',
   api: '/api/',
   _api: '/api',

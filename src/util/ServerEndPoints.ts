@@ -23,5 +23,5 @@ export const EndPoints = {
     orgSpecific: '/api/organisations/',
     promotions: '/promotions',
     claims: '/claims',
-    fileUpload: '/fileuploads',
+    fileUpload: '/file_uploads',
   };

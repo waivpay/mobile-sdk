@@ -153,6 +153,39 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   }
 }
 
+async function sendToEndPointFileUpload(config, accessType, url, accessToken, data) {
+  consoleLog(config, '_________________________________________');
+  consoleLog(config, 'sendToEndPoint JS ' + accessType + ' ' + url + ' ' + accessToken);
+  consoleLog(config, 'Request');
+  consoleLog(config, data);
+  const authorization = 'Bearer ' + accessToken;
+
+  const response = await fetch(url, {
+    method: accessType,
+    headers: {
+      'Authorization': authorization,
+      'Content-Type': 'multipart/form-data;',
+    },
+    body: data,
+    redirect: 'follow'
+  }).catch((error) => {
+    reject(error);
+  });
+
+  const responseText = await response.json();
+  consoleLog(config, 'Response');
+  consoleLog(config, responseText);
+  consoleLog(config, '_________________________________________');
+
+  if (response.ok) {
+    return responseText;
+  } else {
+    console.log("error is " + response);
+    reject(new Error("Error " + JSON.stringify(responseText)));
+  }
+}
+
+
 //sets client key,  client secret and app_id in EncryptedStorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig) {
   if (appConfig != null && appConfig instanceof AppConfig) {
@@ -570,21 +603,20 @@ CashBack Api calls
 
 
 // file Upload
-export async function fileUpload(fileInput) {
+export async function fileUpload(fileInput, filename) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - fileUpload');
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
-      EndPointsCashBack.api +
+      EndPointsCashBack._api +
       EndPointsCashBack.claims +
       EndPointsCashBack.fileUpload;
-
+      var file = new File([fileInput.files[0]], filename);
     const data = new FormData();
-    data.append('file', fileInput.files[0], fileInput.files[0].name);
 
-    await sendToEndPoint(config, 'POST', url, accessToken, data).then (
+    await sendToEndPointFileUpload(config, 'POST', url, accessToken, data).then (
       function(responseText) {
         resolve(responseText);
       }).catch((e) => {

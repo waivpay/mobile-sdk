@@ -615,6 +615,7 @@ export async function fileUpload(fileInput, filename) {
       EndPointsCashBack.fileUpload;
       var file = new File([fileInput.files[0]], filename);
     const data = new FormData();
+    data.append('file', file, file.name);
 
     await sendToEndPointFileUpload(config, 'POST', url, accessToken, data).then (
       function(responseText) {

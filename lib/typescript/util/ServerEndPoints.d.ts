@@ -24,3 +24,7 @@ export declare const EndPointsCashBack: {
     claims: string;
     fileUpload: string;
 };
+export declare const Eway: {
+    encryptionKeyStaging: string;
+    encryptionKeyProd: string;
+};

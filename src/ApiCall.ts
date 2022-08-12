@@ -12,6 +12,8 @@ import { CardList } from './Models/CardList';
 import { OrderList } from './Models/OrderList';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 import EncryptedStorage from 'react-native-encrypted-storage';
+import { Eway } from './util/ServerEndPoints';
+import {encryptFromSDK2} from './util/SDKEncryptionTS';
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
@@ -33,6 +35,21 @@ function getHostEndPoints(config: AppConfig) {
       return EndPoints.host_staging;
     } else if (config.environment == 'prod') {
       return EndPoints.host_prod;
+    } else {
+      return '';
+    }
+  } else {
+    return '';
+  }
+}
+
+function getEWayEncryptionKey(config: AppConfig) {
+  consoleLog(config, 'API call - getEWayEncryptionKey');
+  if (config && config.environment) {
+    if (config.environment == 'staging') {
+      return Eway.encryptionKeyStaging;
+    } else if (config.environment == 'prod') {
+      return Eway.encryptionKeyProd;
     } else {
       return '';
     }
@@ -334,6 +351,16 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function(resolve, reject) {
+    var encryptionKey = getEWayEncryptionKey(config);
+    console.log(encryptionKey);
+    if(order.credit_card_number != null && order.credit_card_number != 'undefined')
+      {
+        order.credit_card_number = encryptFromSDK2(order.credit_card_number, encryptionKey)!;
+      }
+      if(order.credit_card_security_code != null && order.credit_card_security_code != 'undefined')
+      {
+        order.credit_card_security_code = encryptFromSDK2(order.credit_card_security_code, encryptionKey)!;
+      }
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +

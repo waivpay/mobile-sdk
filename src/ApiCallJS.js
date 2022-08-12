@@ -1,4 +1,4 @@
-import { EndPoints, EndPointsCashBack } from './util/ServerEndPoints';
+import { EndPoints, EndPointsCashBack, Eway } from './util/ServerEndPoints';
 import { Product } from './Models/Product';
 import { Catalogue } from './Models/Catalogue';
 import { Brand } from './Models/Brand';
@@ -16,6 +16,9 @@ import { OrderResponse } from './Models/OrderResponse';
 import { OrderList } from './Models/OrderList';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
+import {encryptFromSDK2} from './util/SDKEncryption.js';
+
+
 
 async function getConfig() {
   let appConfig = new AppConfig();
@@ -38,6 +41,21 @@ function getHostEndPoints(config) {
     return '';
   }
 }
+function getEWayEncryptionKey(config) {
+  consoleLog(config, 'API call - getEWayEncryptionKey');
+  if (config && config.environment) {
+    if (config.environment == 'staging') {
+      return Eway.encryptionKeyStaging;
+    } else if (config.environment == 'prod') {
+      return Eway.encryptionKeyProd;
+    } else {
+      return '';
+    }
+  } else {
+    return '';
+  }
+}
+
 
 async function consoleLog(config, message) {
   if (config && config.environment == 'staging') {
@@ -432,6 +450,15 @@ export async function createOrder(order) {
   consoleLog(config, 'API call - createOrder');
   if (order != null && order instanceof Order) {
     return new Promise(async function(resolve, reject) {
+      var encryptionKey = getEWayEncryptionKey(config);
+      if(order.credit_card_number != null && order.credit_card_number != 'undefined')
+      {
+        order.credit_card_number = encryptFromSDK2(order.credit_card_number, encryptionKey);
+      }
+      if(order.credit_card_security_code != null && order.credit_card_security_code != 'undefined')
+      {
+        order.credit_card_security_code = encryptFromSDK2(order.credit_card_security_code, encryptionKey);
+      }
       const accessToken = await getAccessToken();
       const url =
         getHostEndPoints(config) +

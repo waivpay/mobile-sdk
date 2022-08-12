@@ -13,7 +13,7 @@ import { OrderList } from './Models/OrderList';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { Eway } from './util/ServerEndPoints';
-import {encryptFromSDK2} from './util/SDKEncryptionTS';
+import {encryptFromSDK2} from './util/SDKEncryption.js'
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
@@ -45,7 +45,7 @@ function getHostEndPoints(config: AppConfig) {
 
 function getEWayEncryptionKey(config: AppConfig) {
   consoleLog(config, 'API call - getEWayEncryptionKey');
-  if (config && config.environment) {
+  if (config != null && config.environment != null && config.environment != '') {
     if (config.environment == 'staging') {
       return Eway.encryptionKeyStaging;
     } else if (config.environment == 'prod') {

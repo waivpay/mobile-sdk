@@ -25,7 +25,7 @@ import okhttp3.Response;
 
 public class AddToWallet {
     public static final String HOST_STAGING = "https://webstores-staging.herokuapp.com/";
-    public static final String HOST_PRODUCTION = "https://webstores.herokuapp.com/";
+    public static final String HOST_PRODUCTION = "https://webstore.egivv.com/";
 
     public AddToWallet() {
 

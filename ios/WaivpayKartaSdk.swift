@@ -27,7 +27,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     var cardSfx = "";
     var delEmail = "";
     let host_staging = "https://webstores-staging.herokuapp.com/";
-    let host_production = "https://webstores.herokuapp.com/";
+    let host_production = "https://webstore.egivv.com/";
     var token = "";
     var returnResult = false;
     var addToWalletResponse = false;

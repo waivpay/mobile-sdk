@@ -13,7 +13,7 @@ import { OrderList } from './Models/OrderList';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { Eway } from './util/ServerEndPoints';
-import {encryptFromSDK2} from './util/SDKEncryption.js'
+import {encryptFromSDK2} from './util/SDKEncryptionTS.d'
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {

@@ -405,9 +405,13 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
       config.app_id +
       EndPoints.orders;
 
-    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order)).then(response => {
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order)).then(async response => {
       let responseObject = new OrderResponse();
       responseObject = response;
+      var sidInStorage = await EncryptedStorage.getItem('sid');
+            if (sidInStorage != 'undefined' && sidInStorage != null) {
+            await EncryptedStorage.removeItem('sid');
+            }
       resolve(responseObject);
     }).catch((error: Error) => {
       reject(error);

@@ -12,6 +12,9 @@ export declare const EndPoints: {
     sendTwoFactor: string;
     users: string;
     orders: string;
+    riskiFiedBeaconEndPoint: string;
+    riskiFiedBeaconEndPoint2: string;
+    domain: string;
 };
 export declare const EndPointsCashBack: {
     host_staging: string;

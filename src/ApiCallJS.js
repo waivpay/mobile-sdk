@@ -503,13 +503,17 @@ export async function createOrder(order) {
         EndPoints.orders;
 
       await sendToEndPoint(config, 'POST', url, accessToken, order).then(
-        function (responseText) {
+        async function (responseText) {
           let orderResponse = new OrderResponse();
           if (responseText.error != 'undefined' && responseText.error != null) {
             orderResponse.error = responseText.error;
             orderResponse.hasError = true;
           } else {
             orderResponse = responseText;
+            var sidInStorage = await EncryptedStorage.getItem('sid');
+            if (sidInStorage != 'undefined' && sidInStorage != null) {
+            await EncryptedStorage.removeItem('sid');
+            }
           }
 
           resolve(orderResponse);

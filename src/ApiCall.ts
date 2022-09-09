@@ -87,6 +87,38 @@ async function sendToEndPoint(config: AppConfig, accessType: string, url: string
   return responseText;
 }
 
+async function activateBeacon(config: AppConfig) {
+  var domain = EndPoints.domain;
+  var sid = await getBeaconSessionId();
+  var url = EndPoints.riskiFiedBeaconEndPoint + domain + EndPoints.riskiFiedBeaconEndPoint2 + sid;
+
+  await fetch(url, {
+    method: 'GET'
+  }).then( ()=>{consoleLog(config, 'Beacon Endpoint touched sucessfully')} ).catch((error) => {
+    console.log(error);
+  });
+  return sid;
+}
+
+async function getBeaconSessionId() {
+  const sid = await EncryptedStorage.getItem('sid');
+  if (typeof sid !== 'undefined' && sid != null) {
+    return sid;
+  }
+  else {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < 22; i++) {
+      result += characters.charAt(Math.floor(Math.random() *
+        charactersLength));
+    }
+    await EncryptedStorage.setItem('sid', result);
+    return result;
+  }
+
+}
+
 //sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig: AppConfig) {
   if (appConfig != null && appConfig instanceof AppConfig) {
@@ -225,6 +257,7 @@ export async function getBrand(): Promise<Brand> {
 // get catalogue
 export async function getCatalogue(): Promise<Catalogue> {
   const config = await getConfig();
+  await activateBeacon(config);
   consoleLog(config, 'API call - getCatalogue');
 
   return new Promise(async function(resolve, reject) {
@@ -349,6 +382,7 @@ export async function createProfile(user: Profile): Promise<Profile> {
 //create an order
 export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
+  var sid = await activateBeacon(config);
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function(resolve, reject) {
     var encryptionKey = getEWayEncryptionKey(config);
@@ -360,6 +394,9 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
       if(order.credit_card_security_code != null && order.credit_card_security_code != 'undefined')
       {
         order.credit_card_security_code = encryptFromSDK2(order.credit_card_security_code, encryptionKey)!;
+      }
+      if(sid != null){
+        order.session_identifier = sid;
       }
     const accessToken = await getAccessToken();
     const url =

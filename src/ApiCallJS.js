@@ -16,7 +16,7 @@ import { OrderResponse } from './Models/OrderResponse';
 import { OrderList } from './Models/OrderList';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
-import {encryptFromSDK2} from './util/SDKEncryption.js';
+import { encryptFromSDK2 } from './util/SDKEncryption.js';
 
 
 
@@ -121,7 +121,7 @@ export async function sendString(order) {
   const config = await getConfig();
   consoleLog(config, 'API call - createOrder');
 
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -130,7 +130,7 @@ export async function sendString(order) {
       EndPoints.orders;
 
     await sendToEndPointString(config, 'POST', url, accessToken, order).then(
-      function(value) {
+      function (value) {
         alert('Good - Outer ' + value);
         resolve(value);
       }
@@ -169,6 +169,39 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   } else {
     reject(new Error("Error " + JSON.stringify(responseText)));
   }
+}
+
+async function activateBeacon(config) {
+  var domain = EndPoints.domain;
+  var sid = await getBeaconSessionId();
+  var url = EndPoints.riskiFiedBeaconEndPoint + domain + EndPoints.riskiFiedBeaconEndPoint2 + sid;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    redirect: 'follow'
+  }).then((response) => { consoleLog(config, 'Beacon Endpoint touched sucessfully') }).catch((error) => {
+    reject(error);
+  });
+  return sid;
+}
+
+async function getBeaconSessionId() {
+  const sid = await EncryptedStorage.getItem('sid');
+  if (typeof sid !== 'undefined' && sid != null) {
+    return sid;
+  }
+  else {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < 22; i++) {
+      result += characters.charAt(Math.floor(Math.random() *
+        charactersLength));
+    }
+    await EncryptedStorage.setItem('sid', result);
+    return result;
+  }
+
 }
 
 async function sendToEndPointFileUpload(config, accessType, url, accessToken, data) {
@@ -239,35 +272,35 @@ export async function setConfig(appConfig) {
 export async function sendTwoFactor(mobile) {
   const config = await getConfig();
   consoleLog(config, 'API call - sendTwoFactor');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
     const data = { 'mobile_number': mobile };
     await sendToEndPoint(config, 'POST', url, accessToken, data).then(
-      function(responseText) {
+      function (responseText) {
         EncryptedStorage.setItem('waivpay_sdk_verificationId', responseText.verification_id.toString());
         resolve(responseText);
       }).catch((e) => {
-      reject(e);
-    });
+        reject(e);
+      });
   });
 }
 
 export async function verifyTwoFactor(code) {
   const config = await getConfig();
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
     const verificationId = await EncryptedStorage.getItem('waivpay_sdk_verificationId');
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
     const data = { verification_code: code };
 
-    await sendToEndPoint(config, 'PUT', url, accessToken, data).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'PUT', url, accessToken, data).then(
+      function (responseText) {
         resolve(responseText);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -275,12 +308,12 @@ export async function verifyTwoFactor(code) {
 export async function getBrand() {
   const config = await getConfig();
   consoleLog(config, 'API call - getBrand');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let app = new Brand('', '', [], '');
         app = responseText.app;
         const locs = [];
@@ -293,22 +326,23 @@ export async function getBrand() {
         app.locations = locs;
         resolve(app);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
 // get catalogue
 export async function getCatalogue() {
   const config = await getConfig();
+  await activateBeacon(config);
   consoleLog(config, 'API call - getCatalogue');
 
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         const cat = new Catalogue([]);
         let prods = [];
         prods = responseText.products;
@@ -319,8 +353,8 @@ export async function getCatalogue() {
         }
         resolve(cat);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -328,7 +362,7 @@ export async function getCatalogue() {
 export async function getBalance(cardId) {
   const config = await getConfig();
   consoleLog(config, 'API call - getBalance');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -339,14 +373,14 @@ export async function getBalance(cardId) {
       cardId +
       EndPoints.balance;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let bal = new Balance();
         bal = responseText;
         resolve(bal);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -354,7 +388,7 @@ export async function getBalance(cardId) {
 export async function getTransactions(cardId) {
   const config = await getConfig();
   consoleLog(config, 'API call - getTransactions');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -364,8 +398,8 @@ export async function getTransactions(cardId) {
       '/' +
       cardId +
       EndPoints.transaction;
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let transs = [];
         let transactionList = new TransactionList([]);
         transs = responseText.transactions;
@@ -374,10 +408,10 @@ export async function getTransactions(cardId) {
           transaction = transs[x];
           transactionList.transactions.push(transaction);
         }
-      resolve(transactionList);
+        resolve(transactionList);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -385,7 +419,7 @@ export async function getTransactions(cardId) {
 export async function getCardDetails(cardId, email, mobile) {
   const config = await getConfig();
   consoleLog(config, 'API call - getCardDetails');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
 
     const url =
@@ -395,8 +429,8 @@ export async function getCardDetails(cardId, email, mobile) {
       EndPoints.cards +
       '/' +
       cardId;
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let card = new Card();
         card = responseText;
 
@@ -408,12 +442,12 @@ export async function getCardDetails(cardId, email, mobile) {
             '/' +
             responseText.card_id;
           const data2 = { 'email': email };
-           sendToEndPoint(config, 'PUT', url2, accessToken, data2);
+          sendToEndPoint(config, 'PUT', url2, accessToken, data2);
         }
         resolve(card);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -422,7 +456,7 @@ export async function createProfile(user) {
   const config = await getConfig();
   consoleLog(config, 'API call - createProfile');
   if (user != null && user instanceof Profile) {
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       const accessToken = await getAccessToken();
       const url =
         getHostEndPoints(config) +
@@ -430,14 +464,14 @@ export async function createProfile(user) {
         config.app_id +
         EndPoints.users;
 
-      await sendToEndPoint(config, 'POST', url, accessToken, user).then (
-        function(responseText) {
+      await sendToEndPoint(config, 'POST', url, accessToken, user).then(
+        function (responseText) {
           let profile = new Profile();
           profile = responseText.user;
           resolve(profile);
         }).catch((e) => {
-        reject("Unable to process request");
-      });
+          reject("Unable to process request");
+        });
     });
   } else {
     reject('Please pass object of type Profile');
@@ -447,17 +481,19 @@ export async function createProfile(user) {
 //create an order
 export async function createOrder(order) {
   const config = await getConfig();
+  var sid = await activateBeacon(config);
   consoleLog(config, 'API call - createOrder');
   if (order != null && order instanceof Order) {
-    return new Promise(async function(resolve, reject) {
+    return new Promise(async function (resolve, reject) {
       var encryptionKey = getEWayEncryptionKey(config);
-      if(order.credit_card_number != null && order.credit_card_number != 'undefined')
-      {
+      if (order.credit_card_number != null && order.credit_card_number != 'undefined') {
         order.credit_card_number = encryptFromSDK2(order.credit_card_number, encryptionKey);
       }
-      if(order.credit_card_security_code != null && order.credit_card_security_code != 'undefined')
-      {
+      if (order.credit_card_security_code != null && order.credit_card_security_code != 'undefined') {
         order.credit_card_security_code = encryptFromSDK2(order.credit_card_security_code, encryptionKey);
+      }
+      if(sid != null){
+        order.session_identifier = sid;
       }
       const accessToken = await getAccessToken();
       const url =
@@ -466,8 +502,8 @@ export async function createOrder(order) {
         config.app_id +
         EndPoints.orders;
 
-      await sendToEndPoint(config, 'POST', url, accessToken, order).then (
-        function(responseText) {
+      await sendToEndPoint(config, 'POST', url, accessToken, order).then(
+        function (responseText) {
           let orderResponse = new OrderResponse();
           if (responseText.error != 'undefined' && responseText.error != null) {
             orderResponse.error = responseText.error;
@@ -478,8 +514,8 @@ export async function createOrder(order) {
 
           resolve(orderResponse);
         }).catch((e) => {
-        reject("Unable to process request");
-      });
+          reject("Unable to process request");
+        });
     });
   } else {
     reject('Please pass object of type Order');
@@ -490,7 +526,7 @@ export async function createOrder(order) {
 export async function searchCards(mobile) {
   const config = await getConfig();
   consoleLog(config, 'API call - searchCards');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -500,8 +536,8 @@ export async function searchCards(mobile) {
       '?mobile_number=' +
       mobile;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let cards = [];
         const cardList = new CardList([]);
         cards = responseText.cards;
@@ -512,8 +548,8 @@ export async function searchCards(mobile) {
         }
         resolve(cardList);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -521,7 +557,7 @@ export async function searchCards(mobile) {
 export async function getProfile(userId) {
   const config = await getConfig();
   consoleLog(config, 'API call - getProfile');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -530,14 +566,14 @@ export async function getProfile(userId) {
       EndPoints.users +
       '/' +
       userId;
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         let profile = new Profile();
         profile = responseText.user;
         resolve(profile);
-    }).catch((e) => {
-      reject("Unable to process request");
-    });
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -547,7 +583,7 @@ export async function updateProfile(user) {
   consoleLog(config, 'API call - updateProfile');
   if (user != null && user instanceof Profile) {
     if (user.id != 'undefined' && user.id != null) {
-      return new Promise(async function(resolve, reject) {
+      return new Promise(async function (resolve, reject) {
         const accessToken = await getAccessToken();
         const url =
           getHostEndPoints(config) +
@@ -556,14 +592,14 @@ export async function updateProfile(user) {
           EndPoints.users +
           '/' +
           user.id;
-        await sendToEndPoint(config, 'PUT', url, accessToken, user).then (
-          function(responseText) {
+        await sendToEndPoint(config, 'PUT', url, accessToken, user).then(
+          function (responseText) {
             let profile = new Profile();
             profile = responseText.user;
             resolve(profile);
           }).catch((e) => {
-          reject("Unable to process request");
-        });
+            reject("Unable to process request");
+          });
       });
     } else {
       reject('Please provide an id for the user');
@@ -577,7 +613,7 @@ export async function getOrders(user_id) {
   const config = await getConfig();
   consoleLog(config, 'API call - getOrders');
 
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
       getHostEndPoints(config) +
@@ -587,8 +623,8 @@ export async function getOrders(user_id) {
       '?user_id=' +
       user_id;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
         const orderList = new OrderList([]);
         let orders = [];
         orders = responseText.orders;
@@ -600,25 +636,25 @@ export async function getOrders(user_id) {
         resolve(orderList);
       }).catch((e) => {
         reject("Unable to process request");
-    });
+      });
   });
 }
 
 export async function cardCallBack(callBackUrl, token) {
   const config = await getConfig();
   consoleLog(config, 'API call - cardCallBack');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = token;
     const url = callBackUrl;
     const req = { 'tokenId': token };
-    await sendToEndPoint(config, 'POST', url, accessToken, req).then (
-      function(responseText) {
+    await sendToEndPoint(config, 'POST', url, accessToken, req).then(
+      function (responseText) {
         let carCallBackResponse = new CardCallBackResponse();
         carCallBackResponse = responseText;
         resolve(carCallBackResponse);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -633,23 +669,23 @@ CashBack Api calls
 export async function fileUpload(fileInput, filename) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - fileUpload');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
       EndPointsCashBack._api +
       EndPointsCashBack.claims +
       EndPointsCashBack.fileUpload;
-      var file = new File([fileInput.files[0]], filename);
+    var file = new File([fileInput.files[0]], filename);
     const data = new FormData();
     data.append('file', file, file.name);
 
-    await sendToEndPointFileUpload(config, 'POST', url, accessToken, data).then (
-      function(responseText) {
+    await sendToEndPointFileUpload(config, 'POST', url, accessToken, data).then(
+      function (responseText) {
         resolve(responseText);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -657,7 +693,7 @@ export async function fileUpload(fileInput, filename) {
 export async function listPromotions() {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - listPromotions');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
@@ -665,12 +701,12 @@ export async function listPromotions() {
       config.app_id +
       EndPointsCashBack.promotions;
 
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
-      resolve(responseText);
-    }).catch((e) => {
-      reject("Unable to process request");
-    });
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -710,7 +746,7 @@ export async function setConfigCashBack(appConfig) {
 export async function getPromotion(promotionId) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - getPromotion');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
@@ -720,12 +756,12 @@ export async function getPromotion(promotionId) {
       '/' +
       promotionId;
 
-    sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
-      resolve(responseText);
+    sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -733,7 +769,7 @@ export async function getPromotion(promotionId) {
 export async function createClaim(claim, promotionId) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - createClaim');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
@@ -743,12 +779,12 @@ export async function createClaim(claim, promotionId) {
       promotionId +
       EndPointsCashBack.claims;
 
-     await sendToEndPoint(config, 'POST', url, accessToken, claim).then (
-      function(responseText) {
-      resolve(responseText);
-    }).catch((e) => {
-      reject("Unable to process request");
-    });
+    await sendToEndPoint(config, 'POST', url, accessToken, claim).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -756,7 +792,7 @@ export async function createClaim(claim, promotionId) {
 export async function getClaims(external_user_id) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - getClaims');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
@@ -765,12 +801,12 @@ export async function getClaims(external_user_id) {
       '?external_user_id=' +
       external_user_id;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
-      resolve(responseText);
-    }).catch((e) => {
-      reject("Unable to process request");
-    });
+    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
   });
 }
 
@@ -840,18 +876,18 @@ export async function getAccessToken() {
 export async function getClaimDetails(claimId, promotionId) {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - getPromotion');
-  return new Promise(async function(resolve, reject) {
+  return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
       getHostEndPointsCashback(config) +
-      EndPointsCashBack._api + EndPointsCashBack.promotions + '/' + promotionId  + EndPointsCashBack.claims + '/' + claimId;
+      EndPointsCashBack._api + EndPointsCashBack.promotions + '/' + promotionId + EndPointsCashBack.claims + '/' + claimId;
 
-    sendToEndPoint(config, 'GET', url, accessToken, null).then (
-      function(responseText) {
-      resolve(responseText);
+    sendToEndPoint(config, 'GET', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
       }).catch((e) => {
-      reject("Unable to process request");
-    });
+        reject("Unable to process request");
+      });
   });
 }
 

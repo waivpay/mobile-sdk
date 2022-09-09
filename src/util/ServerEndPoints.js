@@ -12,6 +12,9 @@ export const EndPoints = {
   sendTwoFactor: '/verifications',
   users: '/users',
   orders: '/orders',
+  riskiFiedBeaconEndPoint: 'https://beacon.riskified.com?shop=',
+  riskiFiedBeaconEndPoint2: '&sid=',
+  domain: 'www.waivpay.com'
 };
 
 export const EndPointsCashBack = {

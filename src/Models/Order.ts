@@ -24,4 +24,5 @@ export class Order {
   created_at!: string;
   total_cost!: string;
   payment_method!: string;
+  session_identifier!: string;
 }

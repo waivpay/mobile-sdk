@@ -2,6 +2,7 @@ import Foundation
 import PassKit
 import WatchConnectivity
 import Foundation
+import RiskifiedBeacon
 #if canImport(FoundationNetworking)
 import FoundationNetworking
 #endif
@@ -218,6 +219,28 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     @objc(cardExists:withResolver:withRejecter:)
     func cardExists(cardId: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         resolve(getCardExists(cardId));
+    }
+    
+    @objc(startBeacon:withC:withResolver:withRejecter:)
+    func startBeacon(sessionToken: String, shop: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        print("Beacon : Before start : " + sessionToken);
+        RiskifiedBeacon.start(shop, sessionToken: sessionToken, debugInfo: false);
+        print("Beacon : After start");
+    }
+    
+    @objc(updateToken:withResolver:withRejecter:)
+    func updateToken(sessionToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        print("Beacon : Before update : " + sessionToken);
+        RiskifiedBeacon.updateSessionToken(sessionToken);
+        print("Beacon : After update");
+    }
+    
+    @objc(beaconLogRequest:withResolver:withRejecter:)
+    func beaconLogRequest(requestUrl: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+        print("Beacon : Before Log Request : " + requestUrl);
+        var reqUrl = URL.init(string: requestUrl);
+        RiskifiedBeacon.logRequest(reqUrl);
+        print("Beacon : After Log Request : " + requestUrl);
     }
     
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {

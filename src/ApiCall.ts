@@ -14,6 +14,10 @@ import { CardCallBackResponse } from './Models/CardCallBackResponse';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import { Eway } from './util/ServerEndPoints';
 import {encryptFromSDK2} from './util/SDKEncryptionTS.d'
+import {startBeacon} from './index';
+import {updateToken} from './index';
+import {beaconLogRequest} from './index';
+
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
@@ -84,28 +88,17 @@ async function sendToEndPoint(config: AppConfig, accessType: string, url: string
   if (!response.ok) {
     throw new Error(JSON.stringify(responseText));
   }
+  logRequestBeacon(url);
   return responseText;
 }
 
-async function activateBeacon(config: AppConfig) {
-  var domain = EndPoints.domain;
-  var sid = await getBeaconSessionId();
-  var url = EndPoints.riskiFiedBeaconEndPoint + domain + EndPoints.riskiFiedBeaconEndPoint2 + sid;
-
-  await fetch(url, {
-    method: 'GET'
-  }).then( ()=>{consoleLog(config, 'Beacon Endpoint touched sucessfully')} ).catch((error) => {
-    console.log(error);
-  });
-  return sid;
-}
 
 async function getBeaconSessionId() {
-  const sid = await EncryptedStorage.getItem('sid');
-  if (typeof sid !== 'undefined' && sid != null) {
-    return sid;
-  }
-  else {
+  // const sid = await EncryptedStorage.getItem('sid');
+  // if (typeof sid !== 'undefined' && sid != null) {
+  //   return sid;
+  // }
+  // else {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
@@ -115,9 +108,28 @@ async function getBeaconSessionId() {
     }
     await EncryptedStorage.setItem('sid', result);
     return result;
-  }
+  
 
 }
+
+async function activateBeacon(appConfig: AppConfig) {
+  // var domain = EndPoints.domain;
+   var sid = await getBeaconSessionId();
+   console.log("Beacon started");
+   startBeacon(sid, appConfig.shop);
+   return sid;
+ }
+ 
+ async function logRequestBeacon(url: String) {
+   beaconLogRequest(url);
+  }
+ 
+ async function updateBeacon() {
+   // var domain = EndPoints.domain;
+    var sid = await getBeaconSessionId();
+    updateToken(sid);
+    return sid;
+  }
 
 //sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay
 export async function setConfig(appConfig: AppConfig) {
@@ -126,6 +138,7 @@ export async function setConfig(appConfig: AppConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
+    const shop = appConfig.shop;
     if (
       client_id != null &&
       client_id !== 'undefined' &&
@@ -134,13 +147,17 @@ export async function setConfig(appConfig: AppConfig) {
       app_id != null &&
       app_id !== 'undefined' &&
       environment != null &&
-      environment !== 'undefined'
+      environment !== 'undefined' &&
+      shop != null &&
+      shop !== 'undefined'
+
     ) {
       appConfig = new AppConfig();
       appConfig.client_id = client_id;
       appConfig.app_id = app_id;
       appConfig.client_secret = client_secret;
       appConfig.environment = environment;
+      appConfig.shop = shop;
       await EncryptedStorage.setItem(
         'waivpay_sdk_config_app_id',
         JSON.stringify(appConfig),
@@ -241,6 +258,7 @@ export async function verifyTwoFactor(code: string) {
 export async function getBrand(): Promise<Brand> {
   const config = await getConfig();
   consoleLog(config, 'API call - getBrand');
+  await activateBeacon(config);
   return new Promise(async function(resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
@@ -257,7 +275,6 @@ export async function getBrand(): Promise<Brand> {
 // get catalogue
 export async function getCatalogue(): Promise<Catalogue> {
   const config = await getConfig();
-  await activateBeacon(config);
   consoleLog(config, 'API call - getCatalogue');
 
   return new Promise(async function(resolve, reject) {
@@ -382,7 +399,7 @@ export async function createProfile(user: Profile): Promise<Profile> {
 //create an order
 export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
-  var sid = await activateBeacon(config);
+  var sid = await EncryptedStorage.getItem('sid');
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function(resolve, reject) {
     var encryptionKey = getEWayEncryptionKey(config);
@@ -412,6 +429,7 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
             if (sidInStorage != 'undefined' && sidInStorage != null) {
             await EncryptedStorage.removeItem('sid');
             }
+            updateBeacon();
       resolve(responseObject);
     }).catch((error: Error) => {
       reject(error);

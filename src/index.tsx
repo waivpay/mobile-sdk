@@ -27,4 +27,16 @@ export function cardExists(cardId: String): Promise<String> {
 
 export function checkIfReadyToPay(jsonReq: String, environment: String): Promise<String> {
   return WaivpayKartaSdk.checkIfReadyToPay(jsonReq, environment);
+  
+}
+export function startBeacon(sessionToken: String, shop: String): Promise<String> {
+  return WaivpayKartaSdk.startBeacon(sessionToken, shop);
+}
+
+export function updateToken(sessionToken: String): Promise<String> {
+  return WaivpayKartaSdk.updateToken(sessionToken);
+}
+
+export function beaconLogRequest(requestUrl: String): Promise<String> {
+  return WaivpayKartaSdk.beaconLogRequest(requestUrl);
 }

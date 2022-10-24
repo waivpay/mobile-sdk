@@ -7,6 +7,8 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
+import com.riskified.android_sdk.RiskifiedBeaconMain;
+import com.riskified.android_sdk.RiskifiedBeaconMainInterface;
 
 @ReactModule(name = WaivpayKartaSdkModule.NAME)
 public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
@@ -28,6 +30,29 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
     }
 
     public static native boolean nativeCardExists(String cardId);
+
+    @ReactMethod
+    public void startBeacon(String sessionToken, String shop, Promise promise) {
+        RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
+        RXBeacon.startBeacon(shop, sessionToken, false,
+                getCurrentActivity().getApplicationContext());
+    }
+
+    public native boolean nativeStartBeacon(String sessionToken);
+
+    @ReactMethod
+    public void updateToken(String sessionToken, Promise promise) {
+        RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
+        RXBeacon.updateSessionToken(sessionToken);
+    }
+
+    @ReactMethod
+    public void beaconLogRequest(String requestUrl, Promise promise) {
+        RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
+        RXBeacon.logRequest(requestUrl);
+    }
+
+    public native boolean nativeUpdateToken(String sessionToken);
 
     @ReactMethod
     public void checkIfReadyToPay(String jsonReq, String env,  Promise promise) {

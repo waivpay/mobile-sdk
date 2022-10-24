@@ -3,4 +3,5 @@ export class AppConfig {
   client_secret!: string;
   app_id!: string;
   environment!: string;
+  shop!: string;
 }

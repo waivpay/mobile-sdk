@@ -176,14 +176,8 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
 }
 
 async function activateBeacon(config) {
-  // var domain = EndPoints.domain;
-  var sidInStorage = await EncryptedStorage.getItem('sid');
-  console.log("Sid in storage is : " + sidInStorage);
-  if (typeof sidInStorage == 'undefined' || sidInStorage == null) {
-    var sid = await getBeaconSessionId();
-    console.log("Beacon started");
-    startBeacon(sid, config.shop);
-  }
+  var sid = await getBeaconSessionId();
+  startBeacon(sid, config.shop);
 }
 
 async function logRequestBeacon(url) {

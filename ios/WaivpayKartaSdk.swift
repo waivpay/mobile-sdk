@@ -18,7 +18,7 @@ extension Data {
         return map { String(format: "%02hhx", $0) }.joined()
     }
 }
- 
+
 @objc(WaivpayKartaSdk)
 class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessionDelegate {
     
@@ -36,6 +36,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     @objc static func requiresMainQueueSetup() -> Bool {
         return false
     }
+    
     
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
         
@@ -223,24 +224,18 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     
     @objc(startBeacon:withC:withResolver:withRejecter:)
     func startBeacon(sessionToken: String, shop: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        print("Beacon : Before start : " + sessionToken);
-        RiskifiedBeacon.start(shop, sessionToken: sessionToken, debugInfo: false);
-        print("Beacon : After start");
+        RiskifiedBeacon.start(shop, sessionToken: sessionToken, debugInfo: true);
     }
     
     @objc(updateToken:withResolver:withRejecter:)
     func updateToken(sessionToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        print("Beacon : Before update : " + sessionToken);
         RiskifiedBeacon.updateSessionToken(sessionToken);
-        print("Beacon : After update");
     }
     
     @objc(beaconLogRequest:withResolver:withRejecter:)
     func beaconLogRequest(requestUrl: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-        print("Beacon : Before Log Request : " + requestUrl);
         var reqUrl = URL.init(string: requestUrl);
         RiskifiedBeacon.logRequest(reqUrl);
-        print("Beacon : After Log Request : " + requestUrl);
     }
     
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {

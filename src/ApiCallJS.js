@@ -185,18 +185,12 @@ async function logRequestBeacon(url) {
 }
 
 async function updateBeacon() {
-  // var domain = EndPoints.domain;
   var sid = await getBeaconSessionId();
   updateToken(sid);
   return sid;
 }
 
 async function getBeaconSessionId() {
-  // const sid = await EncryptedStorage.getItem('sid');
-  // if (typeof sid !== 'undefined' && sid != null) {
-  //   return sid;
-  // }
-  // else {
   var result = '';
   var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   var charactersLength = characters.length;

@@ -94,11 +94,6 @@ async function sendToEndPoint(config: AppConfig, accessType: string, url: string
 
 
 async function getBeaconSessionId() {
-  // const sid = await EncryptedStorage.getItem('sid');
-  // if (typeof sid !== 'undefined' && sid != null) {
-  //   return sid;
-  // }
-  // else {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
@@ -113,11 +108,8 @@ async function getBeaconSessionId() {
 }
 
 async function activateBeacon(appConfig: AppConfig) {
-  // var domain = EndPoints.domain;
    var sid = await getBeaconSessionId();
-   console.log("Beacon started");
    startBeacon(sid, appConfig.shop);
-   return sid;
  }
  
  async function logRequestBeacon(url: String) {
@@ -125,10 +117,8 @@ async function activateBeacon(appConfig: AppConfig) {
   }
  
  async function updateBeacon() {
-   // var domain = EndPoints.domain;
     var sid = await getBeaconSessionId();
     updateToken(sid);
-    return sid;
   }
 
 //sets client key,  client secret and app_id in asyncstorage, to be used in subsequent api calls tp Waivpay

@@ -264,6 +264,23 @@ export async function getBrand(): Promise<Brand> {
   });
 }
 
+// get App Details without starting Riskified Beacon
+export async function getBrandWithoutBeacon(): Promise<Brand> {
+  const config = await getConfig();
+  consoleLog(config, 'API call - getBrand');
+  return new Promise(async function(resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
+    await sendToEndPoint(config, 'GET', url, accessToken, '').then(response => {
+      let responseObject = new Brand();
+      responseObject = response;
+      resolve(responseObject);
+    }).catch((error: Error) => {
+      reject(error);
+    });
+  });
+}
+
 // get catalogue
 export async function getCatalogue(): Promise<Catalogue> {
   const config = await getConfig();

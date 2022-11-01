@@ -128,7 +128,7 @@ export async function setConfig(appConfig: AppConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
-    const shop = appConfig.shop;
+    var shop = appConfig.shop;
     if (
       client_id != null &&
       client_id !== 'undefined' &&
@@ -137,11 +137,13 @@ export async function setConfig(appConfig: AppConfig) {
       app_id != null &&
       app_id !== 'undefined' &&
       environment != null &&
-      environment !== 'undefined' &&
-      shop != null &&
-      shop !== 'undefined'
-
+      environment !== 'undefined'
     ) {
+      if(shop == null ||
+        shop == 'undefined')
+      {
+        shop = 'www.waivpay.com'
+      }
       appConfig = new AppConfig();
       appConfig.client_id = client_id;
       appConfig.app_id = app_id;

@@ -175,7 +175,8 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   }
 }
 
-async function activateBeacon(config) {
+export async function activateBeacon() {
+  const config = await getConfig();
   var sid = await getBeaconSessionId();
   startBeacon(sid, config.shop);
 }
@@ -312,34 +313,6 @@ export async function verifyTwoFactor(code) {
 
 // get App Details
 export async function getBrand() {
-  const config = await getConfig();
-  consoleLog(config, 'API call - getBrand');
-  await activateBeacon(config);
-  return new Promise(async function (resolve, reject) {
-    const accessToken = await getAccessToken();
-    const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
-
-    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
-      function (responseText) {
-        let app = new Brand('', '', [], '');
-        app = responseText.app;
-        const locs = [];
-        const locations = responseText.app.locations;
-        for (let i = 0; i < locations.length; i++) {
-          let location = new Location();
-          location = locations[i];
-          locs.push(location);
-        }
-        app.locations = locs;
-        resolve(app);
-      }).catch((e) => {
-        reject("Unable to process request");
-      });
-  });
-}
-
-// get App Details
-export async function getBrandWithoutBeacon() {
   const config = await getConfig();
   consoleLog(config, 'API call - getBrand');
   return new Promise(async function (resolve, reject) {

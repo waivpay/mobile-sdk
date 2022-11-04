@@ -18,6 +18,13 @@ import {startBeacon} from './index';
 import {updateToken} from './index';
 import {beaconLogRequest} from './index';
 
+let appIdC = 'appId';
+let waivpay_sdk_config_app_id = '_waivpay_sdk_config_app_id';
+let sidC = '_sid';
+let waivpay_sdk_verificationId = '_waivpay_sdk_verificationId';
+let accessToken_staging = '_accessToken_staging';
+let accessToken_prod = '_accessToken_prod';
+
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
@@ -27,7 +34,8 @@ async function consoleLog(config: AppConfig, message: string) {
 
 async function getConfig() {
   let appConfig = new AppConfig();
-  const config = await EncryptedStorage.getItem('waivpay_sdk_config_app_id');
+  let appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
+  const config = await EncryptedStorage.getItem(appId + waivpay_sdk_config_app_id);
   appConfig = JSON.parse(config || '{}');
   return appConfig;
 }
@@ -101,7 +109,8 @@ async function getBeaconSessionId() {
       result += characters.charAt(Math.floor(Math.random() *
         charactersLength));
     }
-    await EncryptedStorage.setItem('sid', result);
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
+    await EncryptedStorage.setItem(appId + sidC, result);
     return result;
   
 
@@ -151,9 +160,12 @@ export async function setConfig(appConfig: AppConfig) {
       appConfig.client_secret = client_secret;
       appConfig.environment = environment;
       appConfig.shop = shop;
-      await EncryptedStorage.setItem(
-        'waivpay_sdk_config_app_id',
+      await EncryptedStorage.setItem(appConfig.app_id + 
+        waivpay_sdk_config_app_id,
         JSON.stringify(appConfig),
+      );
+      await EncryptedStorage.setItem(appIdC,
+        JSON.stringify(appConfig.app_id),
       );
     } else {
       throw new Error('All parameters need to be passed to set config');
@@ -170,7 +182,13 @@ export async function setConfig(appConfig: AppConfig) {
 export async function getAccessToken() {
   const config = await getConfig();
   consoleLog(config, 'API call - getAccessToken');
-  const accessToken = await EncryptedStorage.getItem('accessToken');
+  var accessToken = null ; 
+  if (config.environment == 'staging') {
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_staging);
+  }
+  else {
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_prod);
+  }
   if (config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
       const accessToken_Obj = JSON.parse(accessToken);
@@ -203,8 +221,14 @@ export async function getAccessToken() {
     }
 
     const responseText = await response.json();
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
     if (responseText) {
-      EncryptedStorage.setItem('accessToken', JSON.stringify(responseText));
+      if (config.environment == 'staging') {
+      EncryptedStorage.setItem(appId + accessToken_staging, JSON.stringify(responseText));
+      }
+      else {
+        EncryptedStorage.setItem(appId + accessToken_prod, JSON.stringify(responseText));
+      }
       return responseText.access_token;
     } else {
       return null;
@@ -221,8 +245,9 @@ export async function sendTwoFactor(mobile: string) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
     const data = { 'mobile_number': mobile };
-    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data)).then(response => {
-      EncryptedStorage.setItem('waivpay_sdk_verificationId', response.verification_id.toString());
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data)).then(async response => {
+      var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
+      EncryptedStorage.setItem(appId + waivpay_sdk_verificationId, response.verification_id.toString());
       resolve(response);
     }).catch((error) => {
       reject(error);
@@ -234,7 +259,8 @@ export async function verifyTwoFactor(code: string) {
   const config = await getConfig();
   return new Promise(async function(resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
-    const verificationId = await EncryptedStorage.getItem('waivpay_sdk_verificationId');
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
+    const verificationId = await EncryptedStorage.getItem(appId + waivpay_sdk_verificationId);
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor + '/' + verificationId;
     const data = { verification_code: code };
@@ -391,7 +417,8 @@ export async function createProfile(user: Profile): Promise<Profile> {
 //create an order
 export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
-  var sid = await EncryptedStorage.getItem('sid');
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
+  var sid = await EncryptedStorage.getItem(appId + sidC);
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function(resolve, reject) {
     var encryptionKey = getEWayEncryptionKey(config);
@@ -417,9 +444,9 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
     await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(order)).then(async response => {
       let responseObject = new OrderResponse();
       responseObject = response;
-      var sidInStorage = await EncryptedStorage.getItem('sid');
+      var sidInStorage = await EncryptedStorage.getItem(appId + sidC);
             if (sidInStorage != 'undefined' && sidInStorage != null) {
-            await EncryptedStorage.removeItem('sid');
+              await EncryptedStorage.removeItem(appId + sidC);
             }
             updateBeacon();
       resolve(responseObject);

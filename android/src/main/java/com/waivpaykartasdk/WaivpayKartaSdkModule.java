@@ -6,6 +6,7 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.riskified.android_sdk.RiskifiedBeaconMain;
 import com.riskified.android_sdk.RiskifiedBeaconMainInterface;
@@ -64,10 +65,10 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
     public static native boolean nativeCheckIfReadyToPay(String jsonReq, String env);
 
     @ReactMethod
-    public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Promise promise) {
+    public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, String url, ReadableMap header , Promise promise) {
         try {
             AddToWallet addToWallet = new AddToWallet();
-            addToWallet.addCardToWallet(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, getCurrentActivity());
+            addToWallet.addCardToWallet(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, url, header, getCurrentActivity());
         } catch (Exception e) {
             e.printStackTrace();
         }

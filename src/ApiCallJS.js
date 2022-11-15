@@ -41,7 +41,11 @@ async function getConfig() {
 
 function getHostEndPoints(config) {
   consoleLog(config, 'API call - getHostEndPoints');
-  if (config && config.environment) {
+  if(config != null && config.host != null && config.host != '')
+  {
+       return config.host;
+  }
+  else if (config && config.environment) {
     if (config.environment == 'staging') {
       return EndPoints.host_staging;
     } else if (config.environment == 'prod') {
@@ -160,6 +164,24 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
 
+  var head = {
+    'Authorization':  authorization ,
+    'Content-Type': 'application/json'
+  } ;
+
+  if(config != null && config.headers != null)
+  {
+    var custHeader = config.headers;
+
+    for (const key in custHeader) {
+      if (custHeader.hasOwnProperty(key)) {
+       head[key] = custHeader[key];
+      }
+  }
+  }
+ console.log("Header is " + JSON.stringify(head));
+ console.log("Url is " + url);
+
   const response = await fetch(url, {
     method: accessType,
     headers: {
@@ -255,6 +277,8 @@ export async function setConfig(appConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
+    const host = appConfig.host;
+    const headers = appConfig.headers;
     var shop = appConfig.shop;
     if (
       client_id != null &&
@@ -271,7 +295,27 @@ export async function setConfig(appConfig) {
       {
         shop == 'www.waivpay.com'
       }
-      appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop);
+      if(host != null && host != 'undefined')
+      {
+        if(headers != null && headers != 'undefined')
+        {
+          appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, host, headers);
+        }
+        else{
+          appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, host, null);
+        }
+      }
+      else
+      {
+        if(headers != null && headers != 'undefined')
+        {
+          appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, null, headers);
+        }
+        else{
+          appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, null, null);
+        }
+      }
+
       await EncryptedStorage.setItem(appConfig.app_id + 
         waivpay_sdk_config_app_id,
         JSON.stringify(appConfig),

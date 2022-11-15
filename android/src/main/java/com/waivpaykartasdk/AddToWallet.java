@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.google.android.gms.tapandpay.TapAndPay;
 import com.google.android.gms.tapandpay.TapAndPayClient;
 import com.google.android.gms.tapandpay.issuer.PushTokenizeRequest;
@@ -31,10 +33,14 @@ public class AddToWallet {
 
     }
 
-    public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, Activity activity) {
+    public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, String url, ReadableMap header, Activity activity) {
         try {
             String postUrl = HOST_STAGING;
-            if (env.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
+            if(url != null && !url.equalsIgnoreCase(""))
+            {
+                postUrl = url + "/";
+            }
+            else if (env.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
                 postUrl = HOST_PRODUCTION;
             }
             postUrl = postUrl + "api/apps/" + appId + "/cards/" + cardId + "/provision";
@@ -50,8 +56,24 @@ public class AddToWallet {
                     .readTimeout(5, TimeUnit.MINUTES); // read timeout
 
             OkHttpClient client = builder.build();
-            Request request = new Request.Builder()
-                    .addHeader("Authorization", "Bearer " + accessToken)
+             Request.Builder build = new Request.Builder();
+
+
+            build = build.addHeader("Authorization", "Bearer " + accessToken);
+            if(header != null)
+            {
+                ReadableMapKeySetIterator iterator = header.keySetIterator();
+                while (iterator.hasNextKey()) {
+                    String key = iterator.nextKey();
+                    if(!key.equalsIgnoreCase("") && !header.getString(key).equalsIgnoreCase(""))
+                    {
+                        build = build.addHeader(key, header.getString(key));
+                    }
+
+                }
+            }
+
+            Request request = build
                     .url(postUrl)
                     .post(body)
                     .build();

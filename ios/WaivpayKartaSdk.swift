@@ -32,6 +32,8 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     var token = "";
     var returnResult = false;
     var addToWalletResponse = false;
+    var customHost = "";
+    var customHeader :[String:String] = [:];
     
     @objc static func requiresMainQueueSetup() -> Bool {
         return false
@@ -39,6 +41,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     
     
     func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
+        
         
         _ = String(decoding: nonce, as: UTF8.self)
         _ = String(decoding: nonceSignature, as: UTF8.self)
@@ -49,7 +52,11 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         let cert_root = certificates[1].base64EncodedString();
 
         var host = "";
-        if(environment == "staging")
+        if(customHost != "")
+        {
+            host = customHost + "/api/apps/" + appid + "/cards/" + cardNumber + "/provision";
+        }
+        else if(environment == "staging")
         {
             host = host_staging + "api/apps/" + appid + "/cards/" + cardNumber + "/provision";
         }
@@ -62,8 +69,15 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         let postData = parameters.data(using: .utf8)
 
         var request = URLRequest(url: URL(string: host)!,timeoutInterval: Double.infinity)
+        print("Tathagata :  addPaymentPassViewController2");
         request.addValue("Bearer " + token, forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        for (key, value) in customHeader {
+            request.addValue(value, forHTTPHeaderField: key)
+//            print("TC key " + key);
+//            print("TC value " + value);
+        }
+        
 
         request.httpMethod = "POST"
         request.httpBody = postData
@@ -103,8 +117,8 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         returnResult = true;
     }
 
-    @objc(addCard:withC:withB:withE:withD:withA:withT:withResolver:withRejecter:)
-    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
+    @objc(addCard:withC:withB:withE:withD:withA:withT:withU:withH:withResolver:withRejecter:)
+    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, url: String, header: Dictionary<String,String>, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
         returnResult = false;
          environment = env;
          appid = appId;
@@ -112,6 +126,20 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         cardSfx = cardSuffix;
          delEmail = deliveryEmail;
         token = accessToken;
+        if(url != "")
+        {
+            print("Tathagata :  url " + url);
+            customHost = url;
+        }
+        if(header.count >= 0)
+        {
+            print("Tathagata :  header ");
+            customHeader = header;
+            for (key, value) in customHeader {
+                print("TC key " + key);
+                print("TC value " + value);
+            }
+        }
         
         let requestConfig = PKAddPaymentPassRequestConfiguration.init(encryptionScheme: PKEncryptionScheme.ECC_V2);
         requestConfig?.cardholderName = cardHolder;

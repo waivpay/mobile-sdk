@@ -4,4 +4,7 @@ export class AppConfig {
   app_id!: string;
   environment!: string;
   shop!: string;
+  host!: string;
+  headers!: any;
+
 }

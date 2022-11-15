@@ -32,7 +32,7 @@ async function consoleLog(config: AppConfig, message: string) {
   }
 }
 
-async function getConfig() {
+export async function getConfig() {
   let appConfig = new AppConfig();
   let appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
   const config = await EncryptedStorage.getItem(appId + waivpay_sdk_config_app_id);
@@ -42,7 +42,11 @@ async function getConfig() {
 
 function getHostEndPoints(config: AppConfig) {
   consoleLog(config, 'API call - getHostEndPoints');
-  if (config != null && config.environment != null && config.environment != '') {
+  if(config != null && config.host != null && config.host != '')
+  {
+       return config.host;
+  }
+  else if (config != null && config.environment != null && config.environment != '') {
     if (config.environment == 'staging') {
       return EndPoints.host_staging;
     } else if (config.environment == 'prod') {
@@ -77,12 +81,25 @@ async function sendToEndPoint(config: AppConfig, accessType: string, url: string
   consoleLog(config, data);
   const authorization = 'Bearer ' + accessToken;
 
+  var head: {[key: string]: string} = {
+    'Authorization':  authorization ,
+    'Content-Type': 'application/json'
+  } ;
+  if(config != null && config.headers != null)
+  {
+    var custHeader: {[key: string]: string} = config.headers;
+
+    for (const key in custHeader) {
+      if (custHeader.hasOwnProperty(key)) {
+       head[key] = custHeader[key];
+      }
+  }
+  }
+ console.log("Header is " + JSON.stringify(head));
+ console.log("Url is " + url);
   const response = await fetch(url, {
     method: accessType,
-    headers: {
-      'Authorization': authorization,
-      'Content-Type': 'application/json',
-    },
+    headers: head,
     body: data,
   }).catch((error) => {
     throw (error);
@@ -138,6 +155,8 @@ export async function setConfig(appConfig: AppConfig) {
     const client_secret = appConfig.client_secret;
     const app_id = appConfig.app_id;
     const environment = appConfig.environment;
+    const host = appConfig.host;
+    const headers = appConfig.headers;
     var shop = appConfig.shop;
     if (
       client_id != null &&
@@ -160,6 +179,14 @@ export async function setConfig(appConfig: AppConfig) {
       appConfig.client_secret = client_secret;
       appConfig.environment = environment;
       appConfig.shop = shop;
+      if(host != null)
+      {
+        appConfig.host = host;
+      }
+      if(headers != null)
+      {
+        appConfig.headers = headers;
+      }
       await EncryptedStorage.setItem(appConfig.app_id + 
         waivpay_sdk_config_app_id,
         JSON.stringify(appConfig),
@@ -207,11 +234,25 @@ export async function getAccessToken() {
       '&client_secret=' +
       config.client_secret;
 
+      var head: {[key: string]: string} = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      } ;
+      if(config != null && config.headers != null)
+      {
+        var custHeader: {[key: string]: string} = config.headers;
+        console.log("New Header is " + JSON.stringify(config.headers));
+    
+        for (const key in custHeader) {
+          if (custHeader.hasOwnProperty(key)) {
+           head[key] = custHeader[key];
+          }
+      }
+      }
+     console.log("Header is " + JSON.stringify(head));
+
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: head,
       body: data,
     });
 

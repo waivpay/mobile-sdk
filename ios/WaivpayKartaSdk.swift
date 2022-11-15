@@ -69,13 +69,14 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         let postData = parameters.data(using: .utf8)
 
         var request = URLRequest(url: URL(string: host)!,timeoutInterval: Double.infinity)
-        print("Tathagata :  addPaymentPassViewController2");
         request.addValue("Bearer " + token, forHTTPHeaderField: "Authorization")
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         for (key, value) in customHeader {
-            request.addValue(value, forHTTPHeaderField: key)
-//            print("TC key " + key);
-//            print("TC value " + value);
+            if(!key.isEmpty && !value.isEmpty)
+            {
+                request.addValue(value, forHTTPHeaderField: key)
+            }
+            
         }
         
 
@@ -128,17 +129,11 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         token = accessToken;
         if(url != "")
         {
-            print("Tathagata :  url " + url);
             customHost = url;
         }
         if(header.count >= 0)
         {
-            print("Tathagata :  header ");
             customHeader = header;
-            for (key, value) in customHeader {
-                print("TC key " + key);
-                print("TC value " + value);
-            }
         }
         
         let requestConfig = PKAddPaymentPassRequestConfiguration.init(encryptionScheme: PKEncryptionScheme.ECC_V2);

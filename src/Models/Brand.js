@@ -7,8 +7,9 @@ export class Brand {
   card_terms_and_conditions;
   tiles = new Array();;
   faqs;
+  profile_text;
 
-  constructor(identifier, iap_enabled,name, locations, terms_of_use, card_terms_and_conditions, tiles, faqs) {
+  constructor(identifier, iap_enabled,name, locations, terms_of_use, card_terms_and_conditions, tiles, faqs, profile_text) {
     this.identifier = identifier;
     this.name = name;
     this.iap_enabled = iap_enabled;
@@ -17,5 +18,6 @@ export class Brand {
     this.card_terms_and_conditions = card_terms_and_conditions;
     this.tiles = tiles;
     this.faqs = faqs;
+    this.profile_text = profile_text;
   }
 }

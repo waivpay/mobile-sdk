@@ -91,12 +91,10 @@ async function sendToEndPoint(config: AppConfig, accessType: string, url: string
 
     for (const key in custHeader) {
       if (custHeader.hasOwnProperty(key)) {
-       head[key] = custHeader[key];
+       head[key] = custHeader[key]!;
       }
   }
   }
- console.log("Header is " + JSON.stringify(head));
- console.log("Url is " + url);
   const response = await fetch(url, {
     method: accessType,
     headers: head,
@@ -240,15 +238,13 @@ export async function getAccessToken() {
       if(config != null && config.headers != null)
       {
         var custHeader: {[key: string]: string} = config.headers;
-        console.log("New Header is " + JSON.stringify(config.headers));
     
         for (const key in custHeader) {
           if (custHeader.hasOwnProperty(key)) {
-           head[key] = custHeader[key];
+           head[key] = custHeader[key]!;
           }
       }
       }
-     console.log("Header is " + JSON.stringify(head));
 
     const response = await fetch(url, {
       method: 'POST',
@@ -463,7 +459,6 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function(resolve, reject) {
     var encryptionKey = getEWayEncryptionKey(config);
-    console.log(encryptionKey);
     if(order.credit_card_number != null && order.credit_card_number != 'undefined')
       {
         order.credit_card_number = encryptFromSDK2(order.credit_card_number, encryptionKey)!;

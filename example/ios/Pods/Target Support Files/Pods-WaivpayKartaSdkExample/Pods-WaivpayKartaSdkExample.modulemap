@@ -1,0 +1,6 @@
+module Pods_WaivpayKartaSdkExample {
+  umbrella header "Pods-WaivpayKartaSdkExample-umbrella.h"
+
+  export *
+  module * { export * }
+}

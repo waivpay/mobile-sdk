@@ -29,6 +29,7 @@ const waivpay_sdk_verificationId = '_waivpay_sdk_verificationId';
 const waivpay_sdk_config_cashback_app_id = '_waivpay_sdk_config_cashback_app_id';
 const accessToken_cashBack = '_accessToken_cashBack';
 const accessToken_staging = '_accessToken_staging';
+const accessToken_development = '_accessToken_development';
 const accessToken_prod = '_accessToken_prod';
 
 async function getConfig() {
@@ -50,6 +51,8 @@ function getHostEndPoints(config) {
       return EndPoints.host_staging;
     } else if (config.environment == 'prod') {
       return EndPoints.host_prod;
+    } else if (config.environment == 'development') {
+      return EndPoints.host_development;
     } else {
       return '';
     }
@@ -60,7 +63,7 @@ function getHostEndPoints(config) {
 function getEWayEncryptionKey(config) {
   consoleLog(config, 'API call - getEWayEncryptionKey');
   if (config && config.environment) {
-    if (config.environment == 'staging') {
+    if (config.environment == 'staging' || config.environment == 'development') {
       return Eway.encryptionKeyStaging;
     } else if (config.environment == 'prod') {
       return Eway.encryptionKeyProd;
@@ -316,7 +319,7 @@ export async function setConfig(appConfig) {
         }
       }
 
-      await EncryptedStorage.setItem(appConfig.app_id + 
+      await EncryptedStorage.setItem(appConfig.app_id +
         waivpay_sdk_config_app_id,
         JSON.stringify(appConfig),
       );
@@ -800,7 +803,7 @@ export async function setConfigCashBack(appConfig) {
     ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
       var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-      await EncryptedStorage.setItem(appId + 
+      await EncryptedStorage.setItem(appId +
         waivpay_sdk_config_cashback_app_id,
         JSON.stringify(appConfig),
       );
@@ -885,7 +888,7 @@ export async function getClaims(external_user_id) {
 async function getConfigCashBack() {
   let appConfig = new AppConfig();
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-  const config = await EncryptedStorage.getItem(appId + 
+  const config = await EncryptedStorage.getItem(appId +
     waivpay_sdk_config_cashback_app_id,
   );
   if (config) {
@@ -905,6 +908,9 @@ export async function getAccessToken() {
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   if (config.environment == 'staging') {
     accessToken = await EncryptedStorage.getItem(appId + accessToken_staging);
+  }
+  else if (config.environment == 'development') {
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_development);
   }
   else {
     accessToken = await EncryptedStorage.getItem(appId + accessToken_prod);

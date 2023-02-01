@@ -1,4 +1,5 @@
 export const EndPoints = {
+  host_development: 'http://localhost:3000',
   host_staging: 'https://webstores-staging.herokuapp.com',
   host_prod: 'https://webstore.egivv.com',
   accessToken: '/oauth/token',

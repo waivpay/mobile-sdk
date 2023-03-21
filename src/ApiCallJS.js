@@ -680,6 +680,30 @@ export async function updateProfile(user) {
   }
 }
 
+// Delete user profile
+export async function deleteProfile(userId) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - deleteProfile');
+
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.users +
+      '/' +
+      userId;
+
+    await sendToEndPoint(config, 'DELETE', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
+  });
+}
+
 export async function getOrders(user_id) {
   const config = await getConfig();
   consoleLog(config, 'API call - getOrders');

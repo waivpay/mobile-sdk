@@ -4,6 +4,7 @@ export declare class Product {
     active: boolean;
     physical: boolean;
     digital: boolean;
+    spotlight: boolean;
     description: string;
     image: string;
     fee: string;

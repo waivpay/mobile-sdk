@@ -1,4 +1,4 @@
-# waivpay-karta-sdk
+# mobile-sdk
 
 The Waivpay SDK provides a simple interface to allow an application to be built with access to Waivpay Web Services which provisions digital cards.
 
@@ -19,7 +19,7 @@ Documentation of installation and usage can be found in the repository https://g
 
 ## Access
 
-This is a private repository and access needs to be provided for by emailing support@conn3cted.com
+This is a private repository and access needs to be provided for by emailing it@waivpay.com
 
 ## Installation
 
@@ -29,14 +29,14 @@ X.X.X needs to changed to the latest version.
 
 Using NPM
 ```sh
-npm install @conn3cted/waivpay-karta-sdk@X.X.X
+npm install @waivpay/mobile-sdk@X.X.X
 cd ios
 pod install
 ```
 
 Using YARN
 ```sh
-yarn add @conn3cted/waivpay-karta-sdk@X.X.X
+yarn add @waivpay/mobile-sdk@X.X.X
 cd ios
 pod install
 ```
@@ -52,9 +52,9 @@ See the read me notes for running the sample.
 Example on how to configure your application, see documentation for more APIs.
 
 ```js
-import {setConfig} from "waivpay-karta-sdk/src/ApiCall";
+import {setConfig} from "@waivpay/mobile-sdk/src/ApiCall";
 
-import {AppConfig} from "waivpay-karta-sdk/src/Models/AppConfig";
+import {AppConfig} from "@waivpay/mobile-sdk/src/Models/AppConfig";
 
 …..
 

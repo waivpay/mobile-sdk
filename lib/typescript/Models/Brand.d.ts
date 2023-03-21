@@ -9,4 +9,5 @@ export declare class Brand {
     card_terms_and_conditions: string;
     tiles: Tile[];
     faqs: string;
+    profile_text: string;
 }

@@ -606,6 +606,29 @@ export async function updateProfile(user: Profile): Promise<Profile> {
   }
 }
 
+// Delete user profile
+export async function deleteProfile(userId: string) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - deleteProfile');
+
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.users +
+      '/' +
+      userId;
+
+    await sendToEndPoint(config, 'DELETE', url, accessToken, '').then(response => {
+      resolve(response);
+    }).catch((error: Error) => {
+      reject(error);
+    });
+  });
+}
+
 export async function getOrders(user_id: string): Promise<OrderList> {
   const config = await getConfig();
   consoleLog(config, 'API call - getOrders');

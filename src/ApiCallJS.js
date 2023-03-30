@@ -202,7 +202,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
     logRequestBeacon(url);
     return responseText;
   } else {
-    reject(new Error("Error " + JSON.stringify(responseText)));
+    throw new Error("Error " + JSON.stringify(responseText), {cause: responseText});
   }
 }
 
@@ -365,7 +365,7 @@ export async function verifyTwoFactor(code) {
       function (responseText) {
         resolve(responseText);
       }).catch((e) => {
-        reject("Unable to process request");
+        reject(e);
       });
   });
 }

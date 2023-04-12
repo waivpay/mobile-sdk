@@ -28,6 +28,7 @@ const sidC = '_sid';
 const waivpay_sdk_verificationId = '_waivpay_sdk_verificationId';
 const waivpay_sdk_config_cashback_app_id = '_waivpay_sdk_config_cashback_app_id';
 const accessToken_cashBack = '_accessToken_cashBack';
+const accessToken_development = '_accessToken_development';
 const accessToken_staging = '_accessToken_staging';
 const accessToken_prod = '_accessToken_prod';
 
@@ -46,7 +47,9 @@ function getHostEndPoints(config) {
        return config.host;
   }
   else if (config && config.environment) {
-    if (config.environment == 'staging') {
+    if (config.environment == 'development') {
+      return EndPoints.host_development;
+    } else if (config.environment == 'staging') {
       return EndPoints.host_staging;
     } else if (config.environment == 'prod') {
       return EndPoints.host_prod;
@@ -60,7 +63,7 @@ function getHostEndPoints(config) {
 function getEWayEncryptionKey(config) {
   consoleLog(config, 'API call - getEWayEncryptionKey');
   if (config && config.environment) {
-    if (config.environment == 'staging') {
+    if (config.environment == 'staging' || config.environment == 'development') {
       return Eway.encryptionKeyStaging;
     } else if (config.environment == 'prod') {
       return Eway.encryptionKeyProd;
@@ -950,10 +953,11 @@ export async function getAccessToken() {
   consoleLog(config, 'API call - getAccessToken');
   var accessToken = null;
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-  if (config.environment == 'staging') {
+  if (config.environment == 'development') {
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_development);
+  } else if (config.environment == 'staging') {
     accessToken = await EncryptedStorage.getItem(appId + accessToken_staging);
-  }
-  else {
+  } else {
     accessToken = await EncryptedStorage.getItem(appId + accessToken_prod);
   }
 

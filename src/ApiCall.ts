@@ -465,11 +465,11 @@ export async function removeCard(cardId: string): Promise<Card> {
       EndPoints.cards +
       '/' +
       cardId;
-    await sendToEndPoint(config, 'DELETE', url, accessToken, null).then(
+    await sendToEndPoint(config, 'DELETE', url, accessToken, '').then(
       function (responseText) {
         resolve(responseText);
       }).catch((error: Error) => {
-        reject("Unable to process request");
+        reject(error);
       });
   });
 }

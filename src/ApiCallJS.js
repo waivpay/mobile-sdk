@@ -516,6 +516,29 @@ export async function getCardDetails(cardId, email, mobile) {
   });
 }
 
+// Remove card from app
+export async function removeCard(cardId) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - removeCard');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.cards +
+      '/' +
+      cardId;
+    await sendToEndPoint(config, 'DELETE', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
+  });
+}
+
 //create a new user
 export async function createProfile(user) {
   const config = await getConfig();

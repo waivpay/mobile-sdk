@@ -451,6 +451,29 @@ export async function getCardDetails(cardId: string, email: string, mobile: stri
   });
 }
 
+// Remove card from app
+export async function removeCard(cardId: string): Promise<Card> {
+  const config = await getConfig();
+  consoleLog(config, 'API call - removeCard');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.cards +
+      '/' +
+      cardId;
+    await sendToEndPoint(config, 'DELETE', url, accessToken, null).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((error: Error) => {
+        reject("Unable to process request");
+      });
+  });
+}
+
 //create a new user
 export async function createProfile(user: Profile): Promise<Profile> {
   const config = await getConfig();
@@ -607,7 +630,7 @@ export async function updateProfile(user: Profile): Promise<Profile> {
 }
 
 // Delete user profile
-export async function deleteProfile(userId: string) {
+export async function deleteProfile(userId: string): Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - deleteProfile');
 

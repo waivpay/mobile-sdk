@@ -23,4 +23,5 @@ export declare class Order {
     total_cost: string;
     payment_method: string;
     session_identifier: string;
+    stripe_payment_method_id: string;
 }

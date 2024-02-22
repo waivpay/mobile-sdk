@@ -1,4 +1,5 @@
 export declare const EndPoints: {
+    host_development: string;
     host_staging: string;
     host_prod: string;
     accessToken: string;

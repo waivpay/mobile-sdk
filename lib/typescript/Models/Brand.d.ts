@@ -10,4 +10,5 @@ export declare class Brand {
     tiles: Tile[];
     faqs: string;
     profile_text: string;
+    disable_parking_collection: boolean;
 }

@@ -15,15 +15,15 @@ The main features provided by the SDK include:\
 
 ## Documentation
 
-Documentation of installation and usage can be found in the repository https://github.com/conn3cted/WaivpayReactNativeSDK/raw/master/WaivpaySDK.doc
+Documentation of installation and usage can be found in the repository https://github.com/waivpay/mobile-sdk/blob/master/Waivpay-SDK.doc
 
 ## Access
 
-This is a private repository and access needs to be provided for by emailing it@waivpay.com
+This is a public repository hosted in the NPM registry of GitHub Packages. Personal Access Tokens are required for installation
 
 ## Installation
 
-Ensure that you have setup your access to project via the .npmrc or .yarnrc files and ssh access as per documentation in the repository https://github.com/conn3cted/WaivpayReactNativeSDK/raw/master/WaivpaySDK.doc
+Ensure that you have setup your access to project via the .npmrc or .yarnrc files as per documentation in the repository https://github.com/waivpay/mobile-sdk/blob/master/Waivpay-SDK.doc
 
 X.X.X needs to changed to the latest version.
 

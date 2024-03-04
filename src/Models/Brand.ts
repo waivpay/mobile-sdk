@@ -11,5 +11,6 @@ export class Brand {
     tiles!: Tile[];
     faqs!: string;
     profile_text!: string;
+    home_page_text!: string;
     disable_parking_collection!: boolean;
   }

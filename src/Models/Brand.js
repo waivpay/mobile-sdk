@@ -7,6 +7,7 @@ export class Brand {
   card_terms_and_conditions;
   tiles = new Array();;
   faqs;
+  privacy_policy;
   profile_text;
   home_page_text;
   disable_parking_collection;

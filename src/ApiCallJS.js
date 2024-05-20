@@ -236,8 +236,6 @@ async function getBeaconSessionId() {
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   await EncryptedStorage.setItem(appId + sidC, result);
   return result;
-
-
 }
 
 async function sendToEndPointFileUpload(config, accessType, url, accessToken, data) {
@@ -256,7 +254,7 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
     body: data,
     redirect: 'follow'
   }).catch((error) => {
-    reject(error);
+    throw new Error("Error " + error.message, {cause: error.message});
   });
 
   const responseText = await response.json();
@@ -268,7 +266,7 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
     return responseText;
   } else {
     console.log("error is " + response);
-    reject(new Error("Error " + JSON.stringify(responseText)));
+    throw new Error("Error " + JSON.stringify(responseText), {cause: responseText});
   }
 }
 

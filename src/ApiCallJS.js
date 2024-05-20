@@ -193,7 +193,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
     },
     body: JSON.stringify(data, replacer),
   }).catch((error) => {
-    reject(error);
+    throw(error);
   });
 
   const responseText = await response.json();
@@ -254,7 +254,7 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
     body: data,
     redirect: 'follow'
   }).catch((error) => {
-    throw new Error("Error " + error.message, {cause: error.message});
+    throw(error);
   });
 
   const responseText = await response.json();

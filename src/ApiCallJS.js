@@ -319,7 +319,7 @@ export async function setConfig(appConfig) {
         }
       }
 
-      await EncryptedStorage.setItem(appConfig.app_id + 
+      await EncryptedStorage.setItem(appConfig.app_id +
         waivpay_sdk_config_app_id,
         JSON.stringify(appConfig),
       );
@@ -781,7 +781,7 @@ export async function cardCallBack(callBackUrl, token) {
 
 /* ***********
 
-CashBack Api calls
+Cashback API calls
 
 ************* */
 
@@ -797,9 +797,12 @@ export async function fileUpload(fileInput, filename) {
       EndPointsCashBack._api +
       EndPointsCashBack.claims +
       EndPointsCashBack.fileUpload;
-    var file = new File([fileInput.files[0]], filename);
     const data = new FormData();
-    data.append('file', file, file.name);
+    data.append('file', {
+      uri: fileInput.files[0].uri,
+      name: filename,
+      type: fileInput.files[0].type
+    });
 
     await sendToEndPointFileUpload(config, 'POST', url, accessToken, data).then(
       function (responseText) {
@@ -850,7 +853,7 @@ export async function setConfigCashBack(appConfig) {
     ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
       var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-      await EncryptedStorage.setItem(appId + 
+      await EncryptedStorage.setItem(appId +
         waivpay_sdk_config_cashback_app_id,
         JSON.stringify(appConfig),
       );
@@ -935,7 +938,7 @@ export async function getClaims(external_user_id) {
 async function getConfigCashBack() {
   let appConfig = new AppConfig();
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-  const config = await EncryptedStorage.getItem(appId + 
+  const config = await EncryptedStorage.getItem(appId +
     waivpay_sdk_config_cashback_app_id,
   );
   if (config) {

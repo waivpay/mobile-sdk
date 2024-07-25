@@ -696,3 +696,22 @@ export async function cardCallBack(callBackUrl: string, token: string): Promise<
     });
   });
 }
+
+// generate barcode
+export async function generateBarcode(productId: number, params: {
+  mobile_number: number | string,
+  scheduled_date?: string | Date,
+}): Promise<any> {
+  const config = await getConfig();
+  consoleLog(config, 'API call - generateBarcode');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue + '/' + productId + EndPoints.barcode;
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(params)).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch(() => {
+        reject("Unable to process request");
+      });
+  });
+}

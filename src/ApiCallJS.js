@@ -42,9 +42,8 @@ async function getConfig() {
 
 function getHostEndPoints(config) {
   consoleLog(config, 'API call - getHostEndPoints');
-  if(config != null && config.host != null && config.host != '')
-  {
-       return config.host;
+  if (config != null && config.host != null && config.host != '') {
+    return config.host;
   }
   else if (config && config.environment) {
     if (config.environment == 'development') {
@@ -168,22 +167,21 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   const authorization = 'Bearer ' + accessToken;
 
   var head = {
-    'Authorization':  authorization ,
+    'Authorization': authorization,
     'Content-Type': 'application/json'
-  } ;
+  };
 
-  if(config != null && config.headers != null)
-  {
+  if (config != null && config.headers != null) {
     var custHeader = config.headers;
 
     for (const key in custHeader) {
       if (custHeader.hasOwnProperty(key)) {
-       head[key] = custHeader[key];
+        head[key] = custHeader[key];
       }
+    }
   }
-  }
- console.log("Header is " + JSON.stringify(head));
- console.log("Url is " + url);
+  console.log("Header is " + JSON.stringify(head));
+  console.log("Url is " + url);
 
   const response = await fetch(url, {
     method: accessType,
@@ -193,7 +191,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
     },
     body: JSON.stringify(data, replacer),
   }).catch((error) => {
-    throw(error);
+    throw (error);
   });
 
   const responseText = await response.json();
@@ -205,7 +203,7 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
     logRequestBeacon(url);
     return responseText;
   } else {
-    throw new Error("Error " + JSON.stringify(responseText), {cause: responseText});
+    throw new Error("Error " + JSON.stringify(responseText), { cause: responseText });
   }
 }
 
@@ -254,7 +252,7 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
     body: data,
     redirect: 'follow'
   }).catch((error) => {
-    throw(error);
+    throw (error);
   });
 
   const responseText = await response.json();
@@ -266,7 +264,7 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
     return responseText;
   } else {
     console.log("error is " + response);
-    throw new Error("Error " + JSON.stringify(responseText), {cause: responseText});
+    throw new Error("Error " + JSON.stringify(responseText), { cause: responseText });
   }
 }
 
@@ -291,28 +289,23 @@ export async function setConfig(appConfig) {
       environment != null &&
       environment !== 'undefined'
     ) {
-      if(shop == null ||
-        shop == 'undefined')
-      {
+      if (shop == null ||
+        shop == 'undefined') {
         shop == 'www.waivpay.com'
       }
-      if(host != null && host != 'undefined')
-      {
-        if(headers != null && headers != 'undefined')
-        {
+      if (host != null && host != 'undefined') {
+        if (headers != null && headers != 'undefined') {
           appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, host, headers);
         }
-        else{
+        else {
           appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, host, null);
         }
       }
-      else
-      {
-        if(headers != null && headers != 'undefined')
-        {
+      else {
+        if (headers != null && headers != 'undefined') {
           appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, null, headers);
         }
-        else{
+        else {
           appConfig = new AppConfig(client_id, client_secret, app_id, environment, shop, null, null);
         }
       }
@@ -342,7 +335,7 @@ export async function sendTwoFactor(mobile) {
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
     const data = { 'mobile_number': mobile };
     await sendToEndPoint(config, 'POST', url, accessToken, data).then(
-     async function (responseText) {
+      async function (responseText) {
         var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
         EncryptedStorage.setItem(appId + waivpay_sdk_verificationId, responseText.verification_id.toString());
         resolve(responseText);
@@ -1080,4 +1073,20 @@ async function getAccessTokenCashBack() {
   } else {
     throw new Error('Please use AppConfig class and config function to setup app configuration parameters');
   }
+}
+
+// generate barcode
+export async function generateBarcode(productId, params) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - generateBarcode');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue + '/' + productId + EndPoints.barcode;
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(params)).then(
+      function (responseText) {
+        resolve(responseText);
+      }).catch((e) => {
+        reject("Unable to process request");
+      });
+  });
 }

@@ -715,3 +715,25 @@ export async function generateBarcode(productId: number, params: {
       });
   });
 }
+
+// verify phone number
+export async function verifyPhoneNumber(phoneNumber: string): Promise<any> {
+  const config = await getConfig();
+  consoleLog(config, 'API call - verifyPhoneNumber');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.verifyPhoneNumber;
+    const data = { mobile_number: phoneNumber };
+    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data))
+      .then(function (responseText) {
+        resolve(responseText);
+      })
+      .catch(() => {
+        reject('Unable to process request');
+      });
+  });
+}

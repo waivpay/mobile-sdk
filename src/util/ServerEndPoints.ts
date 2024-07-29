@@ -16,7 +16,8 @@ export const EndPoints = {
     riskiFiedBeaconEndPoint: 'https://beacon.riskified.com?shop=',
     riskiFiedBeaconEndPoint2: '&sid=',
     domain: 'www.waivpay.com',
-    barcode:'/barcode'
+    barcode:'/barcode',
+    verifyPhoneNumber: '/users/verify_number'
   };
 
   export const EndPointsCashBack = {

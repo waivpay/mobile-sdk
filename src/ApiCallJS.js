@@ -1092,7 +1092,7 @@ export async function generateBarcode(productId, params) {
 }
 
 // vefiry phone number
-export async function verifyPhoneNumber(phoneNumber) {
+export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
   const config = await getConfig();
   consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
@@ -1102,8 +1102,11 @@ export async function verifyPhoneNumber(phoneNumber) {
       EndPoints.appSpecific +
       config.app_id +
       EndPoints.verifyPhoneNumber;
-    const data = { mobile_number: phoneNumber };
-    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data))
+    const data = { 
+      mobile_number: phoneNumber,
+      verifier_user_id: userID
+    };
+    await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(function (responseText) {
         resolve(responseText);
       })

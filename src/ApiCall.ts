@@ -269,14 +269,17 @@ export async function getAccessToken() {
   }
 }
 
-export async function sendTwoFactor(mobile: string) {
+export async function sendTwoFactor(mobile: string, userId?: number | string) {
   const config = await getConfig();
   consoleLog(config, 'API call - sendTwoFactor');
   return new Promise(async function (resolve, reject) {
     try {
       const accessToken = await getAccessToken();
       const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
-      const data = { 'mobile_number': mobile };
+      const data = { 
+        mobile_number: mobile,
+        verifier_user_id: userId
+      };
       await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data)).then(async response => {
         var appId = JSON.parse(await EncryptedStorage.getItem(appIdC) || '{}');
         EncryptedStorage.setItem(appId + waivpay_sdk_verificationId, response.verification_id.toString());
@@ -727,8 +730,8 @@ export async function verifyPhoneNumber(phoneNumber: string): Promise<any> {
       EndPoints.appSpecific +
       config.app_id +
       EndPoints.verifyPhoneNumber;
-    const data = { mobile_number: phoneNumber };
-    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(data))
+    const data = { mobile_number: phoneNumber } as any;
+    await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(function (responseText) {
         resolve(responseText);
       })

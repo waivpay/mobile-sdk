@@ -14,6 +14,11 @@ import com.google.android.gms.wallet.Wallet;
 import com.google.android.gms.wallet.PaymentsClient;
 import com.google.android.gms.wallet.WalletConstants;
 import com.google.common.io.BaseEncoding;
+import com.google.android.gms.tapandpay.issuer.TokenInfo;
+import com.google.android.gms.tapandpay.issuer.IsTokenizedRequest;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnCompleteListener;
+import androidx.annotation.NonNull;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -33,14 +38,13 @@ public class AddToWallet {
 
     }
 
-    public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, String url, ReadableMap header, Activity activity) {
+    public void addCardToWallet(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail,
+            String appId, String accessToken, String url, ReadableMap header, Activity activity) {
         try {
             String postUrl = HOST_STAGING;
-            if(url != null && !url.equalsIgnoreCase(""))
-            {
+            if (url != null && !url.equalsIgnoreCase("")) {
                 postUrl = url + "/";
-            }
-            else if (env.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
+            } else if (env.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
                 postUrl = HOST_PRODUCTION;
             }
             postUrl = postUrl + "api/apps/" + appId + "/cards/" + cardId + "/provision";
@@ -56,17 +60,14 @@ public class AddToWallet {
                     .readTimeout(5, TimeUnit.MINUTES); // read timeout
 
             OkHttpClient client = builder.build();
-             Request.Builder build = new Request.Builder();
-
+            Request.Builder build = new Request.Builder();
 
             build = build.addHeader("Authorization", "Bearer " + accessToken);
-            if(header != null)
-            {
+            if (header != null) {
                 ReadableMapKeySetIterator iterator = header.keySetIterator();
                 while (iterator.hasNextKey()) {
                     String key = iterator.nextKey();
-                    if(!key.equalsIgnoreCase("") && !header.getString(key).equalsIgnoreCase(""))
-                    {
+                    if (!key.equalsIgnoreCase("") && !header.getString(key).equalsIgnoreCase("")) {
                         build = build.addHeader(key, header.getString(key));
                     }
 
@@ -95,33 +96,54 @@ public class AddToWallet {
             tapAndPayClient.pushTokenize(
                     activity,
                     pushTokenizeRequest,
-                    3
-            );
+                    3);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void checkIfReadyToPay(String jsonReq, String environT , Activity activity, Promise promise) {
+    public void checkIfReadyToPay(String jsonReq, String environT, Activity activity, Promise promise) {
 
-         int environ = WalletConstants.ENVIRONMENT_TEST;
+        int environ = WalletConstants.ENVIRONMENT_TEST;
         if (environT.toLowerCase(Locale.ROOT).equalsIgnoreCase("prod")) {
             environ = WalletConstants.ENVIRONMENT_PRODUCTION;
         }
 
-        Wallet.WalletOptions walletOptions =
-                new Wallet.WalletOptions.Builder().setEnvironment(environ).build();
+        Wallet.WalletOptions walletOptions = new Wallet.WalletOptions.Builder().setEnvironment(environ).build();
 
         PaymentsClient paymentsClient = Wallet.getPaymentsClient(activity, walletOptions);
         IsReadyToPayRequest request = IsReadyToPayRequest.fromJson(jsonReq);
-       paymentsClient.isReadyToPay(request).addOnCompleteListener(completedTask -> {
-           if (completedTask.isSuccessful()) {
-               promise.resolve(true);
-           } else {
-               Log.w("isReadyToPay failed", completedTask.getException());
-               promise.resolve(false);
-           }
-       });
+        paymentsClient.isReadyToPay(request).addOnCompleteListener(completedTask -> {
+            if (completedTask.isSuccessful()) {
+                promise.resolve(true);
+            } else {
+                Log.w("isReadyToPay failed", completedTask.getException());
+                promise.resolve(false);
+            }
+        });
 
     }
+
+    public void checkIsCardAdded(String id, Activity activity, Promise promise) {
+        TapAndPayClient tapAndPayClient = TapAndPay.getClient(activity);
+        IsTokenizedRequest request = new IsTokenizedRequest.Builder()
+                .setIdentifier(id)
+                .setNetwork(TapAndPay.CARD_NETWORK_MASTERCARD)
+                .setTokenServiceProvider(TapAndPay.TOKEN_PROVIDER_MASTERCARD)
+                .build();
+
+        tapAndPayClient.isTokenized(request)
+                .addOnCompleteListener(
+                        new OnCompleteListener<Boolean>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Boolean> task) {
+                                if (task.isSuccessful() && task.getResult()) {
+                                    promise.resolve(true);
+                                } else {
+                                    promise.resolve(false);
+                                }
+                            }
+                        });
+    }
+
 }

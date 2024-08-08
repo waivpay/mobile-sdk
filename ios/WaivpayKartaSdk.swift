@@ -237,7 +237,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
 //        print("existsOnPhone " + String(existsOnPhone));
 //        print("existsOnWatch " + String(existsOnWatch));
 //        print("answer " + String(!existsOnPhone || !existsOnWatch));
-        return (!existsOnPhone || !existsOnWatch);
+        return (existsOnPhone && existsOnWatch);
     }
     
     @objc(cardExists:withResolver:withRejecter:)

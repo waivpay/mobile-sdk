@@ -27,7 +27,8 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void cardExists(String cardId, Promise promise) {
-        promise.resolve(false);
+        AddToWallet addToWallet = new AddToWallet();
+        addToWallet.checkIsCardAdded(cardId, getCurrentActivity(), promise);
     }
 
     public static native boolean nativeCardExists(String cardId);
@@ -56,25 +57,28 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
     public native boolean nativeUpdateToken(String sessionToken);
 
     @ReactMethod
-    public void checkIfReadyToPay(String jsonReq, String env,  Promise promise) {
+    public void checkIfReadyToPay(String jsonReq, String env, Promise promise) {
         AddToWallet addToWallet = new AddToWallet();
-        addToWallet.checkIfReadyToPay(jsonReq, env ,getCurrentActivity(),  promise);
+        addToWallet.checkIfReadyToPay(jsonReq, env, getCurrentActivity(), promise);
         promise.resolve(false);
     }
 
     public static native boolean nativeCheckIfReadyToPay(String jsonReq, String env);
 
     @ReactMethod
-    public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken, String url, ReadableMap header , Promise promise) {
+    public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail,
+            String appId, String accessToken, String url, ReadableMap header, Promise promise) {
         try {
             AddToWallet addToWallet = new AddToWallet();
-            addToWallet.addCardToWallet(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, url, header, getCurrentActivity());
+            addToWallet.addCardToWallet(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, url,
+                    header, getCurrentActivity());
         } catch (Exception e) {
             e.printStackTrace();
         }
         promise.resolve(false);
     }
 
-    public static native boolean nativeAddCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail, String appId, String accessToken);
+    public static native boolean nativeAddCard(String cardId, String cardSuffix, String cardHolder, String env,
+            String deliveryEmail, String appId, String accessToken);
 
 }

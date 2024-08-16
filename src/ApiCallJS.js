@@ -9,7 +9,6 @@ import { TransactionList } from './Models/TransactionList';
 import { CardList } from './Models/CardList';
 import { Card } from './Models/Card';
 import { Profile } from './Models/Profile';
-import { ErrorResponse } from './Models/ErrorResponse';
 import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
 import { OrderResponse } from './Models/OrderResponse';
@@ -41,7 +40,6 @@ async function getConfig() {
 }
 
 function getHostEndPoints(config) {
-  consoleLog(config, 'API call - getHostEndPoints');
   if (config != null && config.host != null && config.host != '') {
     return config.host;
   }
@@ -60,7 +58,6 @@ function getHostEndPoints(config) {
   }
 }
 function getEWayEncryptionKey(config) {
-  consoleLog(config, 'API call - getEWayEncryptionKey');
   if (config && config.environment) {
     if (config.environment == 'staging' || config.environment == 'development') {
       return Eway.encryptionKeyStaging;
@@ -88,7 +85,6 @@ function replacer(key, value) {
 }
 
 function getHostEndPointsCashback(config) {
-  consoleLog(config, 'API call - getHostEndPointsCashback');
   if (config && config.environment) {
     if (config.environment == 'staging') {
       return EndPointsCashBack.host_staging;
@@ -121,9 +117,6 @@ async function sendToEndPointString(config, accessType, url, accessToken, data) 
   });
 
   const responseText = await response.json();
-  consoleLog(config, 'Response');
-  consoleLog(config, responseText);
-  consoleLog(config, '_________________________________________');
 
   if (response.ok) {
     alert('Good - Inner');
@@ -137,7 +130,6 @@ async function sendToEndPointString(config, accessType, url, accessToken, data) 
 
 export async function sendString(order) {
   const config = await getConfig();
-  consoleLog(config, 'API call - createOrder');
 
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
@@ -195,9 +187,6 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
   });
 
   const responseText = await response.json();
-  consoleLog(config, 'Response');
-  consoleLog(config, responseText);
-  consoleLog(config, '_________________________________________');
 
   if (response.ok) {
     logRequestBeacon(url);
@@ -256,9 +245,6 @@ async function sendToEndPointFileUpload(config, accessType, url, accessToken, da
   });
 
   const responseText = await response.json();
-  consoleLog(config, 'Response');
-  consoleLog(config, responseText);
-  consoleLog(config, '_________________________________________');
 
   if (response.ok) {
     return responseText;
@@ -329,7 +315,6 @@ export async function setConfig(appConfig) {
 
 export async function sendTwoFactor(mobile) {
   const config = await getConfig();
-  consoleLog(config, 'API call - sendTwoFactor');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
@@ -348,7 +333,6 @@ export async function sendTwoFactor(mobile) {
 export async function verifyTwoFactor(code) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
-    consoleLog(config, 'API call - verifyTwoFactor');
     var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
     const verificationId = await EncryptedStorage.getItem(appId + waivpay_sdk_verificationId);
     const accessToken = await getAccessToken();
@@ -367,7 +351,6 @@ export async function verifyTwoFactor(code) {
 // get App Details
 export async function getBrand() {
   const config = await getConfig();
-  consoleLog(config, 'API call - getBrand');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id;
@@ -394,7 +377,6 @@ export async function getBrand() {
 // get catalogue
 export async function getCatalogue() {
   const config = await getConfig();
-  consoleLog(config, 'API call - getCatalogue');
 
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
@@ -420,7 +402,6 @@ export async function getCatalogue() {
 // get balance
 export async function getBalance(cardId) {
   const config = await getConfig();
-  consoleLog(config, 'API call - getBalance');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
@@ -446,7 +427,6 @@ export async function getBalance(cardId) {
 // get transactions
 export async function getTransactions(cardId) {
   const config = await getConfig();
-  consoleLog(config, 'API call - getTransactions');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
@@ -477,7 +457,6 @@ export async function getTransactions(cardId) {
 // get cardDetails
 export async function getCardDetails(cardId, email, mobile) {
   const config = await getConfig();
-  consoleLog(config, 'API call - getCardDetails');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
 
@@ -513,7 +492,6 @@ export async function getCardDetails(cardId, email, mobile) {
 // Remove card from app
 export async function removeCard(cardId) {
   const config = await getConfig();
-  consoleLog(config, 'API call - removeCard');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
 
@@ -536,7 +514,6 @@ export async function removeCard(cardId) {
 //create a new user
 export async function createProfile(user) {
   const config = await getConfig();
-  consoleLog(config, 'API call - createProfile');
   if (user != null && user instanceof Profile) {
     return new Promise(async function (resolve, reject) {
       const accessToken = await getAccessToken();
@@ -565,7 +542,6 @@ export async function createOrder(order) {
   const config = await getConfig();
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   var sid = await EncryptedStorage.getItem(appId + sidC);
-  consoleLog(config, 'API call - createOrder');
   if (order != null && order instanceof Order) {
     return new Promise(async function (resolve, reject) {
       var encryptionKey = getEWayEncryptionKey(config);
@@ -613,7 +589,6 @@ export async function createOrder(order) {
 // get cards by mobile number
 export async function searchCards(mobile) {
   const config = await getConfig();
-  consoleLog(config, 'API call - searchCards');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
@@ -644,7 +619,6 @@ export async function searchCards(mobile) {
 // get User Profile
 export async function getProfile(userId) {
   const config = await getConfig();
-  consoleLog(config, 'API call - getProfile');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
@@ -668,7 +642,6 @@ export async function getProfile(userId) {
 //update a user profile
 export async function updateProfile(user) {
   const config = await getConfig();
-  consoleLog(config, 'API call - updateProfile');
   if (user != null && user instanceof Profile) {
     if (user.id != 'undefined' && user.id != null) {
       return new Promise(async function (resolve, reject) {
@@ -700,7 +673,6 @@ export async function updateProfile(user) {
 // Delete user profile
 export async function deleteProfile(userId) {
   const config = await getConfig();
-  consoleLog(config, 'API call - deleteProfile');
 
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
@@ -723,7 +695,6 @@ export async function deleteProfile(userId) {
 
 export async function getOrders(user_id) {
   const config = await getConfig();
-  consoleLog(config, 'API call - getOrders');
 
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
@@ -754,7 +725,6 @@ export async function getOrders(user_id) {
 
 export async function cardCallBack(callBackUrl, token) {
   const config = await getConfig();
-  consoleLog(config, 'API call - cardCallBack');
   return new Promise(async function (resolve, reject) {
     const accessToken = token;
     const url = callBackUrl;
@@ -780,7 +750,6 @@ Cashback API calls
 // file Upload
 export async function fileUpload(fileInput, filename) {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - fileUpload');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -807,7 +776,6 @@ export async function fileUpload(fileInput, filename) {
 // list Promotions
 export async function listPromotions() {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - listPromotions');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -861,7 +829,6 @@ export async function setConfigCashBack(appConfig) {
 // get Promotion
 export async function getPromotion(promotionId) {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - getPromotion');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -884,7 +851,6 @@ export async function getPromotion(promotionId) {
 //create claim
 export async function createClaim(claim, promotionId) {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - createClaim');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -907,7 +873,6 @@ export async function createClaim(claim, promotionId) {
 // get claims for user
 export async function getClaims(external_user_id) {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - getClaims');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -917,7 +882,7 @@ export async function getClaims(external_user_id) {
       '?external_user_id=' +
       external_user_id;
 
-    const responseText = await sendToEndPoint(config, 'GET', url, accessToken, null).then(
+    await sendToEndPoint(config, 'GET', url, accessToken, null).then(
       function (responseText) {
         resolve(responseText);
       }).catch((e) => {
@@ -944,7 +909,6 @@ async function getConfigCashBack() {
 // if there is a saved token in async storage and the token is not yet expired , will return the saved token, otherwise will reauthenticate and fetch a new access token
 export async function getAccessToken() {
   const config = await getConfig();
-  consoleLog(config, 'API call - getAccessToken');
   var accessToken = null;
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   if (config.environment == 'development') {
@@ -1007,7 +971,6 @@ export async function getAccessToken() {
 // get Promotion
 export async function getClaimDetails(claimId, promotionId) {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - getPromotion');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessTokenCashBack();
     const url =
@@ -1028,7 +991,6 @@ export async function getClaimDetails(claimId, promotionId) {
 
 async function getAccessTokenCashBack() {
   const config = await getConfigCashBack();
-  consoleLog(config, 'API call - getAccessTokenCashBack');
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   const accessToken = await EncryptedStorage.getItem(appId + accessToken_cashBack);
   if (config != 'undefined' && config != null) {
@@ -1078,7 +1040,6 @@ async function getAccessTokenCashBack() {
 // generate barcode
 export async function generateBarcode(productId, params) {
   const config = await getConfig();
-  consoleLog(config, 'API call - generateBarcode');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue + '/' + productId + EndPoints.barcode;
@@ -1094,7 +1055,6 @@ export async function generateBarcode(productId, params) {
 // vefiry phone number
 export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
   const config = await getConfig();
-  consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url =
@@ -1102,7 +1062,7 @@ export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
       EndPoints.appSpecific +
       config.app_id +
       EndPoints.verifyPhoneNumber;
-    const data = { 
+    const data = {
       mobile_number: phoneNumber,
       verifier_user_id: userID
     };

@@ -3,7 +3,7 @@ export const EndPoints = {
   host_staging: 'https://webstores-staging.herokuapp.com',
   host_prod: 'https://webstore.egivv.com',
   accessToken: '/oauth/token',
-  appSpecific: '/api/apps/',
+  appSpecific: '/api/v1/app/apps/',
   getVerificationCode: '/verifications',
   confirmVerificationCode: '',
   catalogue: '/products',

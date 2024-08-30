@@ -1082,7 +1082,7 @@ export async function generateBarcode(productId, params) {
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.catalogue + '/' + productId + EndPoints.barcode;
-    await sendToEndPoint(config, 'POST', url, accessToken, JSON.stringify(params)).then(
+    await sendToEndPoint(config, 'POST', url, accessToken, params).then(
       function (responseText) {
         resolve(responseText);
       }).catch((e) => {

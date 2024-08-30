@@ -327,13 +327,13 @@ export async function setConfig(appConfig) {
   }
 }
 
-export async function sendTwoFactor(mobile) {
+export async function sendTwoFactor(mobile, userId = undefined) {
   const config = await getConfig();
   consoleLog(config, 'API call - sendTwoFactor');
   return new Promise(async function (resolve, reject) {
     const accessToken = await getAccessToken();
     const url = getHostEndPoints(config) + EndPoints.appSpecific + config.app_id + EndPoints.sendTwoFactor;
-    const data = { 'mobile_number': mobile };
+    const data = { 'mobile_number': mobile, verifier_user_id: userId };
     await sendToEndPoint(config, 'POST', url, accessToken, data).then(
       async function (responseText) {
         var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
@@ -1092,7 +1092,7 @@ export async function generateBarcode(productId, params) {
 }
 
 // vefiry phone number
-export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
+export async function verifyPhoneNumber(phoneNumber) {
   const config = await getConfig();
   consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
@@ -1102,10 +1102,7 @@ export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
       EndPoints.appSpecific +
       config.app_id +
       EndPoints.verifyPhoneNumber;
-    const data = { 
-      mobile_number: phoneNumber,
-      verifier_user_id: userID
-    };
+    const data = { mobile_number: phoneNumber };
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(function (responseText) {
         resolve(responseText);

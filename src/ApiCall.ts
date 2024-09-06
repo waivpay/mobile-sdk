@@ -919,7 +919,7 @@ export async function generateBarcode(
       'POST',
       url,
       accessToken,
-      JSON.stringify(params)
+      params
     )
       .then(function (responseText) {
         resolve(responseText);

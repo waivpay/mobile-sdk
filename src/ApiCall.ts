@@ -67,7 +67,7 @@ function getHostEndPoints(config: AppConfig) {
 }
 
 function getEWayEncryptionKey(config: AppConfig) {
-  consoleLog(config, 'API call - getAccessToken');
+  consoleLog(config, 'API call - getEWayEncryptionKey');
   if (
     config != null &&
     config.environment != null &&
@@ -919,7 +919,7 @@ export async function generateBarcode(
       'POST',
       url,
       accessToken,
-      JSON.stringify(params)
+      params
     )
       .then(function (responseText) {
         resolve(responseText);

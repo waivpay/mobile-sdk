@@ -13,4 +13,5 @@ export declare class Profile {
     allow_location: boolean;
     notifications_guid: string;
     device_type: string;
+    verification_id: string;
 }

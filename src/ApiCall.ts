@@ -409,7 +409,7 @@ export async function sendTwoFactor(mobile: string, userId?: number | string) {
   });
 }
 
-export async function verifyTwoFactor(code: string | number) {
+export async function verifyTwoFactor(code: string | number, isContact?: boolean) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
@@ -430,7 +430,7 @@ export async function verifyTwoFactor(code: string | number) {
     await sendToEndPoint(config, 'PUT', url, accessToken, data)
       .then(async function (responseText) {
         if (responseText?.user?.id) {
-          if (responseText.access_token != null) {
+          if (responseText.access_token != null && !isContact) {
             if (config.environment == 'staging') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_staging,
@@ -641,10 +641,11 @@ export async function removeCard(cardId: string): Promise<Card> {
 }
 
 //create a new user
-export async function createProfile(user: Profile): Promise<Profile> {
+export async function createProfile(user: Profile) {
   const config = await getConfig();
-  return new Promise(async function (resolve, reject) {
-    try {
+  consoleLog(config, 'API call - createProfile');
+  if (user != null && user instanceof Profile) {
+    return new Promise(async function (resolve, reject) {
       const accessToken = await getAccessToken();
       const url =
         getHostEndPoints(config) +
@@ -652,25 +653,36 @@ export async function createProfile(user: Profile): Promise<Profile> {
         config.app_id +
         EndPoints.users;
 
-      await sendToEndPoint(
-        config,
-        'POST',
-        url,
-        accessToken,
-        JSON.stringify(user)
-      )
-        .then((response) => {
-          let responseObject = new Profile();
-          responseObject = response;
-          resolve(responseObject);
+      await sendToEndPoint(config, 'POST', url, accessToken, user as any)
+        .then(async function (responseText) {
+          var appId = JSON.parse(
+            (await EncryptedStorage.getItem(appIdC)) as string
+          );
+          if (config.environment == 'staging') {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_staging,
+              JSON.stringify(responseText)
+            );
+          } else if (config.environment == 'development') {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_development,
+              JSON.stringify(responseText)
+            );
+          } else {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_prod,
+              JSON.stringify(responseText)
+            );
+          }
+          let profile = new Profile();
+          profile = responseText.user;
+          resolve(profile);
         })
-        .catch((error: Error) => {
-          reject(error);
+        .catch((e) => {
+          reject('Unable to process request');
         });
-    } catch (error) {
-      reject(error);
-    }
-  });
+    });
+  }
 }
 
 //create an order
@@ -791,37 +803,33 @@ export async function getProfile(): Promise<Profile> {
 //update a user profile
 export async function updateProfile(user: Profile): Promise<Profile> {
   const config = await getConfig();
-  if (user.id != null) {
-    return new Promise(async function (resolve, reject) {
-      try {
-        const accessToken = await getUserAccessToken();
-        const url =
-          getHostEndPoints(config) +
-          EndPoints.appSpecific +
-          config.app_id +
-          EndPoints.users;
-        await sendToEndPoint(
-          config,
-          'PUT',
-          url,
-          accessToken,
-          JSON.stringify(user)
-        )
-          .then((response) => {
-            let responseObject = new Profile();
-            responseObject = response;
-            resolve(responseObject);
-          })
-          .catch((error: Error) => {
-            reject(error);
-          });
-      } catch (error) {
-        reject(error);
-      }
-    });
-  } else {
-    throw 'Please provide an id for the user';
-  }
+  return new Promise(async function (resolve, reject) {
+    try {
+      const accessToken = await getUserAccessToken();
+      const url =
+        getHostEndPoints(config) +
+        EndPoints.appSpecific +
+        config.app_id +
+        EndPoints.users;
+      await sendToEndPoint(
+        config,
+        'PUT',
+        url,
+        accessToken,
+        JSON.stringify(user)
+      )
+        .then((response) => {
+          let responseObject = new Profile();
+          responseObject = response;
+          resolve(responseObject);
+        })
+        .catch((error: Error) => {
+          reject(error);
+        });
+    } catch (error) {
+      reject(error);
+    }
+  });
 }
 
 // Delete user profile
@@ -931,7 +939,7 @@ export async function generateBarcode(
 }
 
 // verify phone number
-export async function verifyPhoneNumber(phoneNumber: string) {
+export async function verifyPhoneNumber(phoneNumber: string, userId?: number) {
   const config = await getConfig();
   consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
@@ -943,6 +951,7 @@ export async function verifyPhoneNumber(phoneNumber: string) {
       EndPoints.verifyPhoneNumber;
     const data = {
       mobile_number: phoneNumber,
+      verifier_user_id: userId,
     } as any;
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(async function (responseText) {

@@ -16,6 +16,8 @@ export declare const EndPoints: {
     riskiFiedBeaconEndPoint: string;
     riskiFiedBeaconEndPoint2: string;
     domain: string;
+    barcode: string;
+    verifyPhoneNumber: string;
 };
 export declare const EndPointsCashBack: {
     host_staging: string;

@@ -31,7 +31,6 @@ const accessToken_development = '_accessToken_development';
 const accessToken_staging = '_accessToken_staging';
 const accessToken_prod = '_accessToken_prod';
 
-const user_auth = '_user_auth';
 const user_accessToken_development = '_user_access_token_development';
 const user_accessToken_staging = '_user_access_token_staging';
 const user_accessToken_prod = '_user_access_token_prod';
@@ -410,7 +409,7 @@ export async function sendTwoFactor(mobile) {
   });
 }
 
-export async function verifyTwoFactor(code) {
+export async function verifyTwoFactor(code, isContact) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
@@ -431,7 +430,7 @@ export async function verifyTwoFactor(code) {
     await sendToEndPoint(config, 'PUT', url, accessToken, data)
       .then(async function (responseText) {
         if (responseText?.user?.id) {
-          if (responseText.access_token != null) {
+          if (responseText.access_token != null && !isContact) {
             if (config.environment == 'staging') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_staging,
@@ -643,26 +642,33 @@ export async function removeCard(cardId) {
 export async function createProfile(user) {
   const config = await getConfig();
   consoleLog(config, 'API call - createProfile');
-  if (user != null && user instanceof Profile) {
-    return new Promise(async function (resolve, reject) {
+  return new Promise(async function (resolve, reject) {
+    if (user != null && user instanceof Profile) {
       const accessToken = await getAccessToken();
       const url =
         getHostEndPoints(config) +
         EndPoints.appSpecific +
         config.app_id +
         EndPoints.users;
-
       await sendToEndPoint(config, 'POST', url, accessToken, user)
         .then(async function (responseText) {
           var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-          await EncryptedStorage.setItem(
-            appId + user_auth,
-            JSON.stringify({
-              access_token: responseText.access_token,
-              client_id: responseText.client_id,
-              refresh_token: responseText.refresh_token,
-            })
-          );
+          if (config.environment == 'staging') {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_staging,
+              JSON.stringify(responseText)
+            );
+          } else if (config.environment == 'development') {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_development,
+              JSON.stringify(responseText)
+            );
+          } else {
+            EncryptedStorage.setItem(
+              appId + user_accessToken_prod,
+              JSON.stringify(responseText)
+            );
+          }
           let profile = new Profile();
           profile = responseText.user;
           resolve(profile);
@@ -670,10 +676,10 @@ export async function createProfile(user) {
         .catch((e) => {
           reject('Unable to process request');
         });
-    });
-  } else {
-    reject('Please pass object of type Profile');
-  }
+    } else {
+      reject('Please pass object of type Profile');
+    }
+  });
 }
 
 //create an order
@@ -682,8 +688,8 @@ export async function createOrder(order) {
   var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
   var sid = await EncryptedStorage.getItem(appId + sidC);
   consoleLog(config, 'API call - createOrder');
-  if (order != null && order instanceof Order) {
-    return new Promise(async function (resolve, reject) {
+  return new Promise(async function (resolve, reject) {
+    if (order != null && order instanceof Order) {
       var encryptionKey = getEWayEncryptionKey(config);
       if (
         order.credit_card_number != null &&
@@ -733,10 +739,10 @@ export async function createOrder(order) {
         .catch((e) => {
           reject('Unable to process request');
         });
-    });
-  } else {
-    reject('Please pass object of type Order');
-  }
+    } else {
+      reject('Please pass object of type Order');
+    }
+  });
 }
 
 // get cards by mobile number
@@ -797,28 +803,24 @@ export async function updateProfile(user) {
   const config = await getConfig();
   consoleLog(config, 'API call - updateProfile');
   if (user != null && user instanceof Profile) {
-    if (user.id != 'undefined' && user.id != null) {
-      return new Promise(async function (resolve, reject) {
-        const accessToken = await getUserAccessToken();
-        const url =
-          getHostEndPoints(config) +
-          EndPoints.appSpecific +
-          config.app_id +
-          EndPoints.users;
+    return new Promise(async function (resolve, reject) {
+      const accessToken = await getUserAccessToken();
+      const url =
+        getHostEndPoints(config) +
+        EndPoints.appSpecific +
+        config.app_id +
+        EndPoints.users;
 
-        await sendToEndPoint(config, 'PUT', url, accessToken, user)
-          .then(function (responseText) {
-            let profile = new Profile();
-            profile = responseText.user;
-            resolve(profile);
-          })
-          .catch((e) => {
-            reject('Unable to process request');
-          });
-      });
-    } else {
-      reject('Please provide an id for the user');
-    }
+      await sendToEndPoint(config, 'PUT', url, accessToken, user)
+        .then(function (responseText) {
+          let profile = new Profile();
+          profile = responseText.user;
+          resolve(profile);
+        })
+        .catch((e) => {
+          reject('Unable to process request');
+        });
+    });
   } else {
     reject('Please pass object of type Profile');
   }
@@ -1167,6 +1169,7 @@ export async function getUserAccessToken() {
     accessToken = await EncryptedStorage.getItem(appId + user_accessToken_prod);
   }
   const accessToken_Obj = JSON.parse(accessToken);
+  const client_id = accessToken_Obj.client_id || config.client_id;
   if (config != 'undefined' && config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
       const createdTime =
@@ -1182,7 +1185,7 @@ export async function getUserAccessToken() {
     const data =
       'grant_type=refresh_token&' +
       'client_id=' +
-      accessToken_Obj.client_id +
+      client_id +
       '&refresh_token=' +
       accessToken_Obj.refresh_token;
 
@@ -1205,17 +1208,17 @@ export async function getUserAccessToken() {
       if (config.environment == 'staging') {
         EncryptedStorage.setItem(
           appId + user_accessToken_staging,
-          JSON.stringify(responseText)
+          JSON.stringify({ ...accessToken_Obj, ...responseText })
         );
       } else if (config.environment == 'development') {
         EncryptedStorage.setItem(
           appId + user_accessToken_development,
-          JSON.stringify(responseText)
+          JSON.stringify({ ...accessToken_Obj, ...responseText })
         );
       } else {
         EncryptedStorage.setItem(
           appId + user_accessToken_prod,
-          JSON.stringify(responseText)
+          JSON.stringify({ ...accessToken_Obj, ...responseText })
         );
       }
       return responseText.access_token;

@@ -939,7 +939,7 @@ export async function generateBarcode(
 }
 
 // verify phone number
-export async function verifyPhoneNumber(phoneNumber: string, userId?: number) {
+export async function verifyPhoneNumber(phoneNumber: string) {
   const config = await getConfig();
   consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
@@ -950,8 +950,7 @@ export async function verifyPhoneNumber(phoneNumber: string, userId?: number) {
       config.app_id +
       EndPoints.verifyPhoneNumber;
     const data = {
-      mobile_number: phoneNumber,
-      verifier_user_id: userId,
+      mobile_number: phoneNumber
     } as any;
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(async function (responseText) {

@@ -382,30 +382,44 @@ export async function setConfig(appConfig) {
     );
   }
 }
-
-export async function sendTwoFactor(mobile) {
+export async function sendTwoFactor(mobile, userId) {
   const config = await getConfig();
   consoleLog(config, 'API call - sendTwoFactor');
   return new Promise(async function (resolve, reject) {
-    const accessToken = await getAccessToken();
-    const url =
-      getHostEndPoints(config) +
-      EndPoints.appSpecific +
-      config.app_id +
-      EndPoints.sendTwoFactor;
-    const data = { mobile_number: mobile };
-    await sendToEndPoint(config, 'POST', url, accessToken, data)
-      .then(async function (responseText) {
-        var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-        EncryptedStorage.setItem(
-          appId + waivpay_sdk_verificationId,
-          responseText.verification_id.toString()
-        );
-        resolve(responseText);
-      })
-      .catch((e) => {
-        reject(e);
-      });
+    try {
+      const accessToken = await getAccessToken();
+      const url =
+        getHostEndPoints(config) +
+        EndPoints.appSpecific +
+        config.app_id +
+        EndPoints.sendTwoFactor;
+      const data = {
+        mobile_number: mobile,
+        verifier_user_id: userId,
+      };
+      await sendToEndPoint(
+        config,
+        'POST',
+        url,
+        accessToken,
+        JSON.stringify(data)
+      )
+        .then(async (response) => {
+          var appId = JSON.parse(
+            (await EncryptedStorage.getItem(appIdC)) || '{}'
+          );
+          EncryptedStorage.setItem(
+            appId + waivpay_sdk_verificationId,
+            response.verification_id.toString()
+          );
+          resolve(response);
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
@@ -1345,7 +1359,7 @@ export async function generateBarcode(productId, params) {
 }
 
 // vefiry phone number
-export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
+export async function verifyPhoneNumber(phoneNumber) {
   const config = await getConfig();
   consoleLog(config, 'API call - verifyPhoneNumber');
   return new Promise(async function (resolve, reject) {
@@ -1356,8 +1370,7 @@ export async function verifyPhoneNumber(phoneNumber, userID = undefined) {
       config.app_id +
       EndPoints.verifyPhoneNumber;
     const data = {
-      mobile_number: phoneNumber,
-      verifier_user_id: userID,
+      mobile_number: phoneNumber
     };
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(function (responseText) {

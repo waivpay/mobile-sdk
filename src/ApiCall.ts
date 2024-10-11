@@ -90,7 +90,7 @@ async function sendToEndPoint(
   accessType: string,
   url: string,
   accessToken: String,
-  data: string
+  data: any
 ): Promise<any> {
   consoleLog(config, '_________________________________________');
   consoleLog(
@@ -382,13 +382,13 @@ export async function sendTwoFactor(mobile: string, userId?: number | string) {
       const data = {
         mobile_number: mobile,
         verifier_user_id: userId,
-      };
+      }
       await sendToEndPoint(
         config,
         'POST',
         url,
         accessToken,
-        JSON.stringify(data)
+        data
       )
         .then(async (response) => {
           var appId = JSON.parse(
@@ -425,7 +425,7 @@ export async function verifyTwoFactor(code: string | number, isContact?: boolean
       EndPoints.sendTwoFactor +
       '/' +
       verificationId;
-    const data = { verification_code: code } as any;
+    const data = { verification_code: code };
 
     await sendToEndPoint(config, 'PUT', url, accessToken, data)
       .then(async function (responseText) {
@@ -951,7 +951,7 @@ export async function verifyPhoneNumber(phoneNumber: string) {
       EndPoints.verifyPhoneNumber;
     const data = {
       mobile_number: phoneNumber
-    } as any;
+    }
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(async function (responseText) {
         resolve(responseText);

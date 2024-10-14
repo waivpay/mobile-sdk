@@ -678,8 +678,8 @@ export async function createProfile(user: Profile) {
           profile = responseText.user;
           resolve(profile);
         })
-        .catch((e) => {
-          reject('Unable to process request');
+        .catch((error: Error) => {
+          reject(error);
         });
     });
   }

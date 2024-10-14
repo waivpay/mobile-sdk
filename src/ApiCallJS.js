@@ -402,7 +402,7 @@ export async function sendTwoFactor(mobile, userId) {
         'POST',
         url,
         accessToken,
-        JSON.stringify(data)
+        data
       )
         .then(async (response) => {
           var appId = JSON.parse(

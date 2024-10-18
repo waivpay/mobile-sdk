@@ -95,10 +95,34 @@ public class AddToWallet {
           .setDisplayName(cardHolder)
           .setLastDigits(cardSuffix)
           .build();
-      tapAndPayClient.pushTokenize(
-          activity,
-          pushTokenizeRequest,
-          3);
+
+      tapAndPayClient
+          .listTokens()
+          .addOnCompleteListener(new OnCompleteListener<List<TokenInfo>>() {
+            @Override
+            public void onComplete(@NonNull Task<List<TokenInfo>> task) {
+              if (task.isSuccessful()) {
+                for (TokenInfo token : task.getResult()) {
+                  if (token.getFpanLastFour().equals(cardSuffix) && String
+                      .valueOf(TapAndPay.TOKEN_STATE_NEEDS_IDENTITY_VERIFICATION)
+                      .equals(String.valueOf(token.getTokenState()))) {
+                    tapAndPayClient.tokenize(
+                        activity,
+                        String.valueOf(token.getIssuerTokenId()),
+                        TapAndPay.TOKEN_PROVIDER_MASTERCARD,
+                        cardHolder,
+                        TapAndPay.CARD_NETWORK_MASTERCARD,
+                        3);
+                    return;
+                  }
+                }
+              }
+              tapAndPayClient.pushTokenize(
+                  activity,
+                  pushTokenizeRequest,
+                  3);
+            }
+          });
     } catch (Exception e) {
       e.printStackTrace();
     }

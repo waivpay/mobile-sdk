@@ -397,13 +397,7 @@ export async function sendTwoFactor(mobile, userId) {
         mobile_number: mobile,
         verifier_user_id: userId,
       };
-      await sendToEndPoint(
-        config,
-        'POST',
-        url,
-        accessToken,
-        data
-      )
+      await sendToEndPoint(config, 'POST', url, accessToken, data)
         .then(async (response) => {
           var appId = JSON.parse(
             (await EncryptedStorage.getItem(appIdC)) || '{}'
@@ -1342,13 +1336,7 @@ export async function generateBarcode(productId, params) {
       '/' +
       productId +
       EndPoints.barcode;
-    await sendToEndPoint(
-      config,
-      'POST',
-      url,
-      accessToken,
-      params
-    )
+    await sendToEndPoint(config, 'POST', url, accessToken, params)
       .then(function (responseText) {
         resolve(responseText);
       })
@@ -1370,13 +1358,41 @@ export async function verifyPhoneNumber(phoneNumber) {
       config.app_id +
       EndPoints.verifyPhoneNumber;
     const data = {
-      mobile_number: phoneNumber
+      mobile_number: phoneNumber,
     };
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(function (responseText) {
         resolve(responseText);
       })
       .catch((e) => {
+        reject('Unable to process request');
+      });
+  });
+}
+
+// logout user
+export async function logout() {
+  const config = await getConfig();
+  consoleLog(config, 'API call - logout');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getUserAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.logout;
+    await sendToEndPoint(config, 'POST', url, accessToken, null)
+      .then(function (responseText) {
+        resolve(responseText);
+        if (config.environment == 'staging') {
+          EncryptedStorage.removeItem(appId + user_accessToken_staging);
+        } else if (config.environment == 'development') {
+          EncryptedStorage.removeItem(appId + user_accessToken_development);
+        } else {
+          EncryptedStorage.removeItem(appId + user_accessToken_prod);
+        }
+      })
+      .catch(() => {
         reject('Unable to process request');
       });
   });

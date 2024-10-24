@@ -382,14 +382,8 @@ export async function sendTwoFactor(mobile: string, userId?: number | string) {
       const data = {
         mobile_number: mobile,
         verifier_user_id: userId,
-      }
-      await sendToEndPoint(
-        config,
-        'POST',
-        url,
-        accessToken,
-        data
-      )
+      };
+      await sendToEndPoint(config, 'POST', url, accessToken, data)
         .then(async (response) => {
           var appId = JSON.parse(
             (await EncryptedStorage.getItem(appIdC)) || '{}'
@@ -409,7 +403,10 @@ export async function sendTwoFactor(mobile: string, userId?: number | string) {
   });
 }
 
-export async function verifyTwoFactor(code: string | number, isContact?: boolean) {
+export async function verifyTwoFactor(
+  code: string | number,
+  isContact?: boolean
+) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
@@ -950,11 +947,39 @@ export async function verifyPhoneNumber(phoneNumber: string) {
       config.app_id +
       EndPoints.verifyPhoneNumber;
     const data = {
-      mobile_number: phoneNumber
-    }
+      mobile_number: phoneNumber,
+    };
     await sendToEndPoint(config, 'POST', url, accessToken, data)
       .then(async function (responseText) {
         resolve(responseText);
+      })
+      .catch(() => {
+        reject('Unable to process request');
+      });
+  });
+}
+
+// logout user
+export async function logout() {
+  const config = await getConfig();
+  consoleLog(config, 'API call - logout');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getUserAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.logout;
+    await sendToEndPoint(config, 'POST', url, accessToken, null)
+      .then(function (responseText) {
+        resolve(responseText);
+        if (config.environment == 'staging') {
+          EncryptedStorage.removeItem(appIdC + user_accessToken_staging);
+        } else if (config.environment == 'development') {
+          EncryptedStorage.removeItem(appIdC + user_accessToken_development);
+        } else {
+          EncryptedStorage.removeItem(appIdC + user_accessToken_prod);
+        }
       })
       .catch(() => {
         reject('Unable to process request');

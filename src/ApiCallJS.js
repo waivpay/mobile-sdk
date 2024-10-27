@@ -126,6 +126,9 @@ async function sendToEndPointString(
 
   const response = await fetch(url, {
     method: accessType,
+    sslPinning: {
+      certs: ["optus_waivpay.cer"]
+    },
     headers: {
       'Authorization': authorization,
       'Content-Type': 'application/json',
@@ -203,6 +206,9 @@ async function sendToEndPoint(config, accessType, url, accessToken, data) {
 
   const response = await fetch(url, {
     method: accessType,
+    sslPinning: {
+      certs: ["optus_waivpay.cer"]
+    },
     headers: {
       'Authorization': authorization,
       'Content-Type': 'application/json',
@@ -274,6 +280,9 @@ async function sendToEndPointFileUpload(
 
   const response = await fetch(url, {
     method: accessType,
+    sslPinning: {
+      certs: ["optus_waivpay.cer"]
+    },
     headers: {
       'Authorization': authorization,
       'Content-Type': 'multipart/form-data;',
@@ -1119,6 +1128,9 @@ export async function getAccessToken() {
 
     const response = await fetch(url, {
       method: 'POST',
+      sslPinning: {
+        certs: ["optus_waivpay.cer"]
+      },
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -1292,6 +1304,9 @@ async function getAccessTokenCashBack() {
       config.client_secret;
 
     const response = await fetch(url, {
+      sslPinning: {
+        certs: ["optus_waivpay.cer"]
+      },
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

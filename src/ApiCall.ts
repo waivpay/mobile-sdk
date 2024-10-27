@@ -115,6 +115,9 @@ async function sendToEndPoint(
     }
   }
   const response = await fetch(url, {
+    sslPinning: {
+      certs: ["optus_waivpay.cer"]
+    },
     method: accessType,
     headers: head,
     body: data,
@@ -256,6 +259,9 @@ export async function getAccessToken() {
     }
 
     const response = await fetch(url, {
+      sslPinning: {
+        certs: ["optus_waivpay.cer"]
+      },
       method: 'POST',
       headers: head,
       body: data,

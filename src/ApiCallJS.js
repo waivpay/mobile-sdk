@@ -13,7 +13,7 @@ import { AppConfig } from './Models/AppConfig';
 import { Order } from './Models/Order';
 import { OrderResponse } from './Models/OrderResponse';
 import { OrderList } from './Models/OrderList';
-import EncryptedStorage from 'react-native-encrypted-storage';
+import EncryptedStorage from 'react-native-sensitive-info';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
 import { encryptFromSDK2 } from './util/SDKEncryption.js';
 import { startBeacon } from './index';
@@ -37,9 +37,9 @@ const user_accessToken_prod = '_user_access_token_prod';
 
 async function getConfig() {
   let appConfig = new AppConfig();
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
   const config = await EncryptedStorage.getItem(
-    appId + waivpay_sdk_config_app_id
+    appId + waivpay_sdk_config_app_id, {}
   );
   appConfig = JSON.parse(config);
   return appConfig;
@@ -251,8 +251,8 @@ async function getBeaconSessionId() {
   for (var i = 0; i < 22; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-  await EncryptedStorage.setItem(appId + sidC, result);
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
+  await EncryptedStorage.setItem(appId + sidC, result, {});
   return result;
 }
 
@@ -370,9 +370,9 @@ export async function setConfig(appConfig) {
 
       await EncryptedStorage.setItem(
         appConfig.app_id + waivpay_sdk_config_app_id,
-        JSON.stringify(appConfig)
+        JSON.stringify(appConfig), {}
       );
-      await EncryptedStorage.setItem(appIdC, JSON.stringify(appConfig.app_id));
+      await EncryptedStorage.setItem(appIdC, JSON.stringify(appConfig.app_id), {});
     } else {
       throw new Error('All parameters need to be passed to set config');
     }
@@ -400,11 +400,11 @@ export async function sendTwoFactor(mobile, userId) {
       await sendToEndPoint(config, 'POST', url, accessToken, data)
         .then(async (response) => {
           var appId = JSON.parse(
-            (await EncryptedStorage.getItem(appIdC)) || '{}'
+            (await EncryptedStorage.getItem(appIdC, {})) || '{}'
           );
           EncryptedStorage.setItem(
             appId + waivpay_sdk_verificationId,
-            response.verification_id.toString()
+            response.verification_id.toString(), {}
           );
           resolve(response);
         })
@@ -421,9 +421,9 @@ export async function verifyTwoFactor(code, isContact) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
-    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
     const verificationId = await EncryptedStorage.getItem(
-      appId + waivpay_sdk_verificationId
+      appId + waivpay_sdk_verificationId, {}
     );
     const accessToken = await getAccessToken();
     const url =
@@ -442,17 +442,17 @@ export async function verifyTwoFactor(code, isContact) {
             if (config.environment == 'staging') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_staging,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             } else if (config.environment == 'development') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_development,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             } else {
               EncryptedStorage.setItem(
                 appId + user_accessToken_prod,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             }
           }
@@ -660,21 +660,21 @@ export async function createProfile(user) {
         EndPoints.users;
       await sendToEndPoint(config, 'POST', url, accessToken, user)
         .then(async function (responseText) {
-          var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+          var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
           if (config.environment == 'staging') {
             EncryptedStorage.setItem(
               appId + user_accessToken_staging,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           } else if (config.environment == 'development') {
             EncryptedStorage.setItem(
               appId + user_accessToken_development,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           } else {
             EncryptedStorage.setItem(
               appId + user_accessToken_prod,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           }
           let profile = new Profile();
@@ -693,8 +693,8 @@ export async function createProfile(user) {
 //create an order
 export async function createOrder(order) {
   const config = await getConfig();
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
-  var sid = await EncryptedStorage.getItem(appId + sidC);
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
+  var sid = await EncryptedStorage.getItem(appId + sidC, {});
   consoleLog(config, 'API call - createOrder');
   return new Promise(async function (resolve, reject) {
     if (order != null && order instanceof Order) {
@@ -735,9 +735,9 @@ export async function createOrder(order) {
             orderResponse.hasError = true;
           } else {
             orderResponse = responseText;
-            var sidInStorage = await EncryptedStorage.getItem(appId + sidC);
+            var sidInStorage = await EncryptedStorage.getItem(appId + sidC, {});
             if (sidInStorage != 'undefined' && sidInStorage != null) {
-              await EncryptedStorage.removeItem(appId + sidC);
+              await EncryptedStorage.removeItem(appId + sidC, {});
             }
           }
 
@@ -980,10 +980,10 @@ export async function setConfigCashBack(appConfig) {
       environment !== 'undefined'
     ) {
       appConfig = new AppConfig(client_id, client_secret, app_id, environment);
-      var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+      var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
       await EncryptedStorage.setItem(
         appId + waivpay_sdk_config_cashback_app_id,
-        JSON.stringify(appConfig)
+        JSON.stringify(appConfig), {}
       );
     } else {
       throw new Error('All parameters need to be passed to set config');
@@ -1068,9 +1068,9 @@ export async function getClaims(external_user_id) {
 
 async function getConfigCashBack() {
   let appConfig = new AppConfig();
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
   const config = await EncryptedStorage.getItem(
-    appId + waivpay_sdk_config_cashback_app_id
+    appId + waivpay_sdk_config_cashback_app_id, {}
   );
   consoleLog(config, 'API call - getConfigCashBack');
   if (config) {
@@ -1087,15 +1087,15 @@ export async function getAccessToken() {
   const config = await getConfig();
   consoleLog(config, 'API call - getAccessToken');
   var accessToken = null;
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
   if (config.environment == 'development') {
     accessToken = await EncryptedStorage.getItem(
-      appId + accessToken_development
+      appId + accessToken_development, {}
     );
   } else if (config.environment == 'staging') {
-    accessToken = await EncryptedStorage.getItem(appId + accessToken_staging);
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_staging, {});
   } else {
-    accessToken = await EncryptedStorage.getItem(appId + accessToken_prod);
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_prod, {});
   }
 
   if (config != 'undefined' && config != null) {
@@ -1131,22 +1131,22 @@ export async function getAccessToken() {
     }
 
     const responseText = await response.json();
-    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
     if (responseText) {
       if (config.environment == 'staging') {
         EncryptedStorage.setItem(
           appId + accessToken_staging,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       } else if (config.environment == 'development') {
         EncryptedStorage.setItem(
           appId + accessToken_development,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       } else {
         EncryptedStorage.setItem(
           appId + accessToken_prod,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       }
       return responseText.access_token;
@@ -1164,17 +1164,17 @@ export async function getUserAccessToken() {
   const config = await getConfig();
   consoleLog(config, 'API call - getAccessUserToken');
   var accessToken = null;
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
   if (config.environment == 'development') {
     accessToken = await EncryptedStorage.getItem(
-      appId + user_accessToken_development
+      appId + user_accessToken_development, {}
     );
   } else if (config.environment == 'staging') {
     accessToken = await EncryptedStorage.getItem(
-      appId + user_accessToken_staging
+      appId + user_accessToken_staging, {}
     );
   } else {
-    accessToken = await EncryptedStorage.getItem(appId + user_accessToken_prod);
+    accessToken = await EncryptedStorage.getItem(appId + user_accessToken_prod, {});
   }
   const accessToken_Obj = JSON.parse(accessToken);
   const client_id = accessToken_Obj.client_id || config.client_id;
@@ -1211,22 +1211,22 @@ export async function getUserAccessToken() {
     }
 
     const responseText = await response.json();
-    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
     if (responseText) {
       if (config.environment == 'staging') {
         EncryptedStorage.setItem(
           appId + user_accessToken_staging,
-          JSON.stringify({ ...accessToken_Obj, ...responseText })
+          JSON.stringify({ ...accessToken_Obj, ...responseText }), {}
         );
       } else if (config.environment == 'development') {
         EncryptedStorage.setItem(
           appId + user_accessToken_development,
-          JSON.stringify({ ...accessToken_Obj, ...responseText })
+          JSON.stringify({ ...accessToken_Obj, ...responseText }), {}
         );
       } else {
         EncryptedStorage.setItem(
           appId + user_accessToken_prod,
-          JSON.stringify({ ...accessToken_Obj, ...responseText })
+          JSON.stringify({ ...accessToken_Obj, ...responseText }), {}
         );
       }
       return responseText.access_token;
@@ -1268,9 +1268,9 @@ export async function getClaimDetails(claimId, promotionId) {
 async function getAccessTokenCashBack() {
   const config = await getConfigCashBack();
   consoleLog(config, 'API call - getAccessTokenCashBack');
-  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+  var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
   const accessToken = await EncryptedStorage.getItem(
-    appId + accessToken_cashBack
+    appId + accessToken_cashBack, {}
   );
   if (config != 'undefined' && config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
@@ -1305,11 +1305,11 @@ async function getAccessTokenCashBack() {
     }
 
     const responseText = await response.json();
-    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC));
+    var appId = JSON.parse(await EncryptedStorage.getItem(appIdC, {}));
     if (responseText) {
       EncryptedStorage.setItem(
         appId + accessToken_cashBack,
-        JSON.stringify(responseText)
+        JSON.stringify(responseText), {}
       );
       return responseText.access_token;
     } else {
@@ -1385,11 +1385,11 @@ export async function logout() {
       .then(function (responseText) {
         resolve(responseText);
         if (config.environment == 'staging') {
-          EncryptedStorage.removeItem(appId + user_accessToken_staging);
+          EncryptedStorage.removeItem(appId + user_accessToken_staging, {});
         } else if (config.environment == 'development') {
-          EncryptedStorage.removeItem(appId + user_accessToken_development);
+          EncryptedStorage.removeItem(appId + user_accessToken_development, {});
         } else {
-          EncryptedStorage.removeItem(appId + user_accessToken_prod);
+          EncryptedStorage.removeItem(appId + user_accessToken_prod, {});
         }
       })
       .catch(() => {

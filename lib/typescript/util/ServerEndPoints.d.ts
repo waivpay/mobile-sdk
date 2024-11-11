@@ -18,6 +18,7 @@ export declare const EndPoints: {
     domain: string;
     barcode: string;
     verifyPhoneNumber: string;
+    logout: string;
 };
 export declare const EndPointsCashBack: {
     host_staging: string;

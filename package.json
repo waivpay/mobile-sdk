@@ -145,6 +145,6 @@
     ]
   },
   "dependencies": {
-    "react-native-encrypted-storage": "^4.0.2"
+    "react-native-sensitive-info": "^5.5.8"
   }
 }

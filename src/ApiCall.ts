@@ -11,7 +11,7 @@ import { OrderResponse } from './Models/OrderResponse';
 import { CardList } from './Models/CardList';
 import { OrderList } from './Models/OrderList';
 import { CardCallBackResponse } from './Models/CardCallBackResponse';
-import EncryptedStorage from 'react-native-encrypted-storage';
+import EncryptedStorage from 'react-native-sensitive-info';
 import { Eway } from './util/ServerEndPoints';
 import { encryptFromSDK2 } from './util/SDKEncryptionTS.d';
 import { startBeacon } from './index';
@@ -37,9 +37,9 @@ async function consoleLog(config: AppConfig, message: string) {
 
 export async function getConfig() {
   let appConfig = new AppConfig();
-  let appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) || '{}');
+  let appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) || '{}');
   const config = await EncryptedStorage.getItem(
-    appId + waivpay_sdk_config_app_id
+    appId + waivpay_sdk_config_app_id, {}
   );
   appConfig = JSON.parse(config || '{}');
   return appConfig;
@@ -142,8 +142,8 @@ async function getBeaconSessionId() {
   for (var i = 0; i < 22; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) || '{}');
-  await EncryptedStorage.setItem(appId + sidC, result);
+  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) || '{}');
+  await EncryptedStorage.setItem(appId + sidC, result, {});
   return result;
 }
 
@@ -200,9 +200,9 @@ export async function setConfig(appConfig: AppConfig) {
       }
       await EncryptedStorage.setItem(
         appConfig.app_id + waivpay_sdk_config_app_id,
-        JSON.stringify(appConfig)
+        JSON.stringify(appConfig), {}
       );
-      await EncryptedStorage.setItem(appIdC, JSON.stringify(appConfig.app_id));
+      await EncryptedStorage.setItem(appIdC, JSON.stringify(appConfig.app_id), {});
     } else {
       throw new Error('All parameters need to be passed to set config');
     }
@@ -220,9 +220,9 @@ export async function getAccessToken() {
   consoleLog(config, 'API call - getAccessToken');
   var accessToken: string | null = null;
   if (config.environment == 'staging') {
-    accessToken = await EncryptedStorage.getItem(appId + accessToken_staging);
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_staging, {});
   } else {
-    accessToken = await EncryptedStorage.getItem(appId + accessToken_prod);
+    accessToken = await EncryptedStorage.getItem(appId + accessToken_prod, {});
   }
   if (config != null) {
     if (typeof accessToken !== 'undefined' && accessToken != null) {
@@ -267,17 +267,17 @@ export async function getAccessToken() {
     }
 
     const responseText = await response.json();
-    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) || '{}');
+    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) || '{}');
     if (responseText) {
       if (config.environment == 'staging') {
         EncryptedStorage.setItem(
           appId + accessToken_staging,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       } else {
         EncryptedStorage.setItem(
           appId + accessToken_prod,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       }
       return responseText.access_token;
@@ -295,18 +295,18 @@ export async function getUserAccessToken() {
   const config = (await getConfig()) as any;
   consoleLog(config, 'API call - getAccessUserToken');
   var accessToken: string = '';
-  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) as string);
+  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) as string);
   if (config.environment == 'development') {
     accessToken = (await EncryptedStorage.getItem(
-      appId + user_accessToken_development
+      appId + user_accessToken_development, {}
     )) as string;
   } else if (config.environment == 'staging') {
     accessToken = (await EncryptedStorage.getItem(
-      appId + user_accessToken_staging
+      appId + user_accessToken_staging, {}
     )) as string;
   } else {
     accessToken = (await EncryptedStorage.getItem(
-      appId + user_accessToken_prod
+      appId + user_accessToken_prod, {}
     )) as string;
   }
   const accessToken_Obj = JSON.parse(accessToken);
@@ -343,22 +343,22 @@ export async function getUserAccessToken() {
     }
 
     const responseText = await response.json();
-    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) || '{}');
+    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC,{})) || '{}');
     if (responseText) {
       if (config.environment == 'staging') {
         EncryptedStorage.setItem(
           appId + user_accessToken_staging,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       } else if (config.environment == 'development') {
         EncryptedStorage.setItem(
           appId + user_accessToken_development,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       } else {
         EncryptedStorage.setItem(
           appId + user_accessToken_prod,
-          JSON.stringify(responseText)
+          JSON.stringify(responseText), {}
         );
       }
       return responseText.access_token;
@@ -386,11 +386,11 @@ export async function sendTwoFactor(mobile: string, userId?: number | string) {
       await sendToEndPoint(config, 'POST', url, accessToken, data)
         .then(async (response) => {
           var appId = JSON.parse(
-            (await EncryptedStorage.getItem(appIdC)) || '{}'
+            (await EncryptedStorage.getItem(appIdC, {})) || '{}'
           );
           EncryptedStorage.setItem(
             appId + waivpay_sdk_verificationId,
-            response.verification_id.toString()
+            response.verification_id.toString(), {}
           );
           resolve(response);
         })
@@ -410,9 +410,9 @@ export async function verifyTwoFactor(
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     consoleLog(config, 'API call - verifyTwoFactor');
-    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) as string);
+    var appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) as string);
     const verificationId = await EncryptedStorage.getItem(
-      appId + waivpay_sdk_verificationId
+      appId + waivpay_sdk_verificationId, {}
     );
     const accessToken = await getAccessToken();
     const url =
@@ -431,17 +431,17 @@ export async function verifyTwoFactor(
             if (config.environment == 'staging') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_staging,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             } else if (config.environment == 'development') {
               EncryptedStorage.setItem(
                 appId + user_accessToken_development,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             } else {
               EncryptedStorage.setItem(
                 appId + user_accessToken_prod,
-                JSON.stringify(responseText)
+                JSON.stringify(responseText), {}
               );
             }
           }
@@ -653,22 +653,22 @@ export async function createProfile(user: Profile) {
       await sendToEndPoint(config, 'POST', url, accessToken, user as any)
         .then(async function (responseText) {
           var appId = JSON.parse(
-            (await EncryptedStorage.getItem(appIdC)) as string
-          );
+            (await EncryptedStorage.getItem(appIdC, {}) as string
+          ));
           if (config.environment == 'staging') {
             EncryptedStorage.setItem(
               appId + user_accessToken_staging,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           } else if (config.environment == 'development') {
             EncryptedStorage.setItem(
               appId + user_accessToken_development,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           } else {
             EncryptedStorage.setItem(
               appId + user_accessToken_prod,
-              JSON.stringify(responseText)
+              JSON.stringify(responseText), {}
             );
           }
           let profile = new Profile();
@@ -685,8 +685,8 @@ export async function createProfile(user: Profile) {
 //create an order
 export async function createOrder(order: Order): Promise<OrderResponse> {
   const config = await getConfig();
-  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC)) || '{}');
-  var sid = await EncryptedStorage.getItem(appId + sidC);
+  var appId = JSON.parse((await EncryptedStorage.getItem(appIdC, {})) || '{}');
+  var sid = await EncryptedStorage.getItem(appId + sidC, {});
   return new Promise(async function (resolve, reject) {
     try {
       var encryptionKey = getEWayEncryptionKey(config);
@@ -728,9 +728,9 @@ export async function createOrder(order: Order): Promise<OrderResponse> {
         .then(async (response) => {
           let responseObject = new OrderResponse();
           responseObject = response;
-          var sidInStorage = await EncryptedStorage.getItem(appId + sidC);
+          var sidInStorage = await EncryptedStorage.getItem(appId + sidC, {});
           if (sidInStorage != 'undefined' && sidInStorage != null) {
-            await EncryptedStorage.removeItem(appId + sidC);
+            await EncryptedStorage.deleteItem(appId + sidC, {});
           }
           updateBeacon();
           resolve(responseObject);
@@ -974,11 +974,11 @@ export async function logout() {
       .then(function (responseText) {
         resolve(responseText);
         if (config.environment == 'staging') {
-          EncryptedStorage.removeItem(appIdC + user_accessToken_staging);
+          EncryptedStorage.deleteItem(appIdC + user_accessToken_staging, {});
         } else if (config.environment == 'development') {
-          EncryptedStorage.removeItem(appIdC + user_accessToken_development);
+          EncryptedStorage.deleteItem(appIdC + user_accessToken_development, {});
         } else {
-          EncryptedStorage.removeItem(appIdC + user_accessToken_prod);
+          EncryptedStorage.deleteItem(appIdC + user_accessToken_prod, {});
         }
       })
       .catch(() => {

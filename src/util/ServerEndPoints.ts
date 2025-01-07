@@ -19,6 +19,7 @@ export const EndPoints = {
     barcode:'/barcode',
     verifyPhoneNumber: '/users/verify_number',
     logout: '/users/logout',
+    bsb: '/bsb',
   };
 
   export const EndPointsCashBack = {

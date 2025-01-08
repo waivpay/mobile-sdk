@@ -1397,3 +1397,25 @@ export async function logout() {
       });
   });
 }
+
+// get bank name
+export async function getBankName(bsb) {
+  const config = await getConfig();
+  consoleLog(config, 'API call - getBankName');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessTokenCashBack();
+    const url =
+      getHostEndPointsCashback(config) +
+      EndPointsCashBack._api +
+      EndPoints.bsb;
+
+    await sendToEndPoint(config, 'POST', url, accessToken, { bsb: bsb })
+      .then(function (responseText) {
+        resolve(responseText);
+      })
+      .catch((e) => {
+        reject(e);
+      });
+  });
+}
+

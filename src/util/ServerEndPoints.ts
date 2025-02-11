@@ -20,6 +20,8 @@ export const EndPoints = {
     verifyPhoneNumber: '/users/verify_number',
     logout: '/users/logout',
     bsb: '/bsb',
+    locations: '/loyalty_locations',
+    loyalty_entries: '/users/loyalty_entries',
   };
 
   export const EndPointsCashBack = {

@@ -986,3 +986,44 @@ export async function logout() {
       });
   });
 }
+
+export async function getLoyaltyLocations() {
+  const config = await getConfig();
+  consoleLog(config, 'API call - getLoyaltyLocations');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.locations;
+
+    await sendToEndPoint(config, 'GET', url, accessToken, null)
+      .then(function (responseText) {
+        resolve(responseText);
+      })
+      .catch(() => {
+        reject('Unable to process request');
+      });
+  });
+}
+
+export async function getLoyaltyEntries() {
+  const config = await getConfig();
+  consoleLog(config, 'API call - getLoyaltyEntries');
+  return new Promise(async function (resolve, reject) {
+    const accessToken = await getUserAccessToken();
+    const url =
+      getHostEndPoints(config) +
+      EndPoints.appSpecific +
+      config.app_id +
+      EndPoints.loyalty_entries;
+    await sendToEndPoint(config, 'GET', url, accessToken, null)
+      .then(function (responseText) {
+        resolve(responseText);
+      })
+      .catch(() => {
+        reject('Unable to process request');
+      });
+  });
+}

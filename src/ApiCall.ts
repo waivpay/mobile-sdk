@@ -29,6 +29,14 @@ const user_accessToken_development = '_user_access_token_development';
 const user_accessToken_staging = '_user_access_token_staging';
 const user_accessToken_prod = '_user_access_token_prod';
 
+
+var logoutFunction = () => {};
+
+export function setLogout(_logoutFunction: () => void) {
+  logoutFunction = _logoutFunction;
+}
+
+
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
     console.log(message);
@@ -262,6 +270,7 @@ export async function getAccessToken() {
     });
 
     if (!response.ok) {
+      logoutFunction();
       const message = `An error has occured: ${response.status}`;
       throw new Error(message);
     }
@@ -338,6 +347,7 @@ export async function getUserAccessToken() {
     });
 
     if (!response.ok) {
+      logoutFunction();
       const message = `An error has occured: ${response.status}`;
       throw new Error(message);
     }

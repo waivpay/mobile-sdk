@@ -20,6 +20,12 @@ import { startBeacon } from './index';
 import { updateToken } from './index';
 import { beaconLogRequest } from './index';
 
+var logoutFunction = () => {};
+
+export function setLogout(_logoutFunction) {
+  logoutFunction = _logoutFunction;
+}
+
 const appIdC = 'appId';
 const waivpay_sdk_config_app_id = '_waivpay_sdk_config_app_id';
 const sidC = '_sid';
@@ -1126,6 +1132,7 @@ export async function getAccessToken() {
     });
 
     if (!response.ok) {
+      logoutFunction()
       const message = `An error has occured: ${response.status}`;
       throw new Error(message);
     }
@@ -1207,6 +1214,7 @@ export async function getUserAccessToken() {
 
     if (!response.ok) {
       const message = `An error has occured: ${response.status}`;
+      logoutFunction();
       throw new Error(message);
     }
 

@@ -22,6 +22,7 @@ export const EndPoints = {
   bsb: '/bsb',
   locations: '/loyalty_locations',
   loyalty_entries: '/users/loyalty_entries',
+  store: '/stores?location_id=',
 };
 
 export const EndPointsCashBack = {

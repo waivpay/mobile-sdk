@@ -502,7 +502,7 @@ export async function getBrand() {
 }
 
 
-export async function getStore(locationId) {
+export async function getStores(locationId) {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     try {
@@ -515,9 +515,10 @@ export async function getStore(locationId) {
         locationId;
       await sendToEndPoint(config, 'GET', url, accessToken, '')
         .then((response) => {
-          let responseObject = new Store();
-          responseObject = response;
-          resolve(responseObject);
+          resolve(response.map((store => {
+            let storeObj = new Store();
+            return Object.assign(storeObj, store);
+          })));
         })
         .catch((error) => {
           reject(error);

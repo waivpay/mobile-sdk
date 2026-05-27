@@ -486,7 +486,7 @@ export async function getBrand(): Promise<Brand> {
   });
 }
 
-export async function getStore(locationId: number): Promise<Store> {
+export async function getStores(locationId: number): Promise<Store[]> {
   const config = await getConfig();
   return new Promise(async function (resolve, reject) {
     try {
@@ -499,7 +499,7 @@ export async function getStore(locationId: number): Promise<Store> {
         locationId;
       await sendToEndPoint(config, 'GET', url, accessToken, '')
         .then((response) => {
-          resolve(response as Store);
+          resolve(response as Store[]);
         })
         .catch((error: Error) => {
           reject(error);

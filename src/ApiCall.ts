@@ -17,6 +17,7 @@ import { encryptFromSDK2 } from './util/SDKEncryptionTS.d';
 import { startBeacon } from './index';
 import { updateToken } from './index';
 import { beaconLogRequest } from './index';
+import { Store } from './Models/Store';
 
 let appIdC = 'appId';
 let waivpay_sdk_config_app_id = '_waivpay_sdk_config_app_id';
@@ -29,13 +30,11 @@ const user_accessToken_development = '_user_access_token_development';
 const user_accessToken_staging = '_user_access_token_staging';
 const user_accessToken_prod = '_user_access_token_prod';
 
-
 var logoutFunction = () => {};
 
 export function setLogout(_logoutFunction: () => void) {
   logoutFunction = _logoutFunction;
 }
-
 
 async function consoleLog(config: AppConfig, message: string) {
   if (config && config.environment == 'staging') {
@@ -477,6 +476,30 @@ export async function getBrand(): Promise<Brand> {
           let responseObject = new Brand();
           responseObject = response;
           resolve(responseObject);
+        })
+        .catch((error: Error) => {
+          reject(error);
+        });
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
+export async function getStores(locationId: number): Promise<Store[]> {
+  const config = await getConfig();
+  return new Promise(async function (resolve, reject) {
+    try {
+      const accessToken = await getAccessToken();
+      const url =
+        getHostEndPoints(config) +
+        EndPoints.appSpecific +
+        config.app_id +
+        EndPoints.store +
+        locationId;
+      await sendToEndPoint(config, 'GET', url, accessToken, '')
+        .then((response) => {
+          resolve(response as Store[]);
         })
         .catch((error: Error) => {
           reject(error);

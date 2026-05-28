@@ -19,6 +19,7 @@ import { encryptFromSDK2 } from './util/SDKEncryption.js';
 import { startBeacon } from './index';
 import { updateToken } from './index';
 import { beaconLogRequest } from './index';
+import { Store } from './Models/Store.js';
 
 var logoutFunction = () => {};
 
@@ -497,6 +498,34 @@ export async function getBrand() {
       .catch((e) => {
         reject('Unable to process request');
       });
+  });
+}
+
+
+export async function getStores(locationId) {
+  const config = await getConfig();
+  return new Promise(async function (resolve, reject) {
+    try {
+      const accessToken = await getAccessToken();
+      const url =
+        getHostEndPoints(config) +
+        EndPoints.appSpecific +
+        config.app_id +
+        EndPoints.store +
+        locationId;
+      await sendToEndPoint(config, 'GET', url, accessToken, '')
+        .then((response) => {
+          resolve(response.map((store => {
+            let storeObj = new Store();
+            return Object.assign(storeObj, store);
+          })));
+        })
+        .catch((error) => {
+          reject(error);
+        });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 

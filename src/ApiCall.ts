@@ -497,9 +497,12 @@ export async function getStores(locationId: number): Promise<Store[]> {
         config.app_id +
         EndPoints.store +
         locationId;
-      await sendToEndPoint(config, 'GET', url, accessToken, '')
+      await sendToEndPoint(config, 'GET', url, accessToken, null)
         .then((response) => {
-          resolve(response as Store[]);
+          resolve(response.map(((store: Store) => {
+            let storeObj = new Store(store);
+            return Object.assign(storeObj, store);
+          })));
         })
         .catch((error: Error) => {
           reject(error);

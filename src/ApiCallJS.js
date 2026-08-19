@@ -515,7 +515,7 @@ export async function getStores(locationId) {
         locationId;
       await sendToEndPoint(config, 'GET', url, accessToken, null)
         .then((response) => {
-          resolve(response.map((store => {
+          resolve(response.stores.map((store => {
             let storeObj = new Store();
             return Object.assign(storeObj, store);
           })));

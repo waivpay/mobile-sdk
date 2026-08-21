@@ -499,7 +499,7 @@ export async function getStores(locationId: number): Promise<Store[]> {
         locationId;
       await sendToEndPoint(config, 'GET', url, accessToken, null)
         .then((response) => {
-          resolve(response.map(((store: Store) => {
+          resolve(response.stores.map(((store: Store) => {
             let storeObj = new Store(store);
             return Object.assign(storeObj, store);
           })));

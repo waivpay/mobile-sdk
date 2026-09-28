@@ -718,7 +718,6 @@ export async function createProfile(user: Profile) {
         });
     });
   }
-  return Promise.reject(new Error('createProfile: invalid user'));
 }
 
 //create an order

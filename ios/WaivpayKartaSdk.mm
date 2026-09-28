@@ -22,6 +22,16 @@
 @interface WaivpayKartaSdk (Spec) <NativeWaivpayKartaSdkSpec>
 @end
 
+// TurboModule factory required by the RCTTurboModule protocol. The Swift class
+// cannot implement it (C++ return type), so it lives here. The generated JSI
+// wrapper carries the instance via InitParams.
+@implementation WaivpayKartaSdk (Spec)
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params {
+  return std::make_shared<facebook::react::NativeWaivpayKartaSdkSpecJSI>(params);
+}
+@end
+
 // Module registration. We inline what RCT_EXPORT_MODULE_NO_LOAD does instead of
 // using RCT_EXTERN_MODULE, because RCT_EXTERN_MODULE re-declares
 // `@interface WaivpayKartaSdk : NSObject` which would duplicate the declaration
@@ -31,7 +41,6 @@ RCT_EXTERN void RCTRegisterModule(Class);
 + (NSString *)moduleName {
   return @"WaivpayKartaSdk";
 }
-@end
 
 __attribute__((constructor)) static void RCTInitializeWaivpayKartaSdk(void) {
   RCTRegisterModule([WaivpayKartaSdk class]);
@@ -73,3 +82,4 @@ RCT_EXTERN_METHOD(updateToken:(NSString *)sessionToken
 RCT_EXTERN_METHOD(beaconLogRequest:(NSString *)requestUrl
                        resolve:(RCTPromiseResolveBlock)resolve
                         reject:(RCTPromiseRejectBlock)reject)
+@end

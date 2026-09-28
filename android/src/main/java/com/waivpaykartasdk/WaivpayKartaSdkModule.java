@@ -4,15 +4,17 @@ import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.module.annotations.ReactModule;
 import com.riskified.android_sdk.RiskifiedBeaconMain;
 import com.riskified.android_sdk.RiskifiedBeaconMainInterface;
 
+// Base class is the Codegen-generated TurboModule spec
+// (com.waivpaykartasdk.NativeWaivpayKartaSdkSpec, output under
+// android/build/generated/source/codegen/ at build time). It extends
+// ReactContextBaseJavaModule, so we keep the same lifecycle as before.
 @ReactModule(name = WaivpayKartaSdkModule.NAME)
-public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
+public class WaivpayKartaSdkModule extends NativeWaivpayKartaSdkSpec {
     public static final String NAME = "WaivpayKartaSdk";
 
     public WaivpayKartaSdkModule(ReactApplicationContext reactContext) {
@@ -25,47 +27,39 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    @ReactMethod
+    @Override
     public void cardExists(String cardId, Promise promise) {
         AddToWallet addToWallet = new AddToWallet();
         addToWallet.checkIsCardAdded(cardId, getCurrentActivity(), promise);
     }
 
-    public static native boolean nativeCardExists(String cardId);
-
-    @ReactMethod
+    @Override
     public void startBeacon(String sessionToken, String shop, Promise promise) {
         RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
         RXBeacon.startBeacon(shop, sessionToken, false,
                 getCurrentActivity().getApplicationContext());
     }
 
-    public native boolean nativeStartBeacon(String sessionToken);
-
-    @ReactMethod
+    @Override
     public void updateToken(String sessionToken, Promise promise) {
         RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
         RXBeacon.updateSessionToken(sessionToken);
     }
 
-    @ReactMethod
+    @Override
     public void beaconLogRequest(String requestUrl, Promise promise) {
         RiskifiedBeaconMainInterface RXBeacon = new RiskifiedBeaconMain();
         RXBeacon.logRequest(requestUrl);
     }
 
-    public native boolean nativeUpdateToken(String sessionToken);
-
-    @ReactMethod
+    @Override
     public void checkIfReadyToPay(String jsonReq, String env, Promise promise) {
         AddToWallet addToWallet = new AddToWallet();
         addToWallet.checkIfReadyToPay(jsonReq, env, getCurrentActivity(), promise);
         promise.resolve(false);
     }
 
-    public static native boolean nativeCheckIfReadyToPay(String jsonReq, String env);
-
-    @ReactMethod
+    @Override
     public void addCard(String cardId, String cardSuffix, String cardHolder, String env, String deliveryEmail,
             String appId, String accessToken, String url, ReadableMap header, Promise promise) {
         try {
@@ -77,8 +71,4 @@ public class WaivpayKartaSdkModule extends ReactContextBaseJavaModule {
         }
         promise.resolve(false);
     }
-
-    public static native boolean nativeAddCard(String cardId, String cardSuffix, String cardHolder, String env,
-            String deliveryEmail, String appId, String accessToken);
-
 }

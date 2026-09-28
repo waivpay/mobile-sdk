@@ -6,6 +6,6 @@ target 'WaivpayKartaSdk' do
   use_frameworks!
 
   # Pods for WaivpayKartaSdk
-pod ‘RiskifiedBeaconXCFramework’, ‘~>1.3.2’
+pod 'RiskifiedBeaconXCFramework', '~> 1.6.4'
 
 end

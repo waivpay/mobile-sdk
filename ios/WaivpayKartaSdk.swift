@@ -20,7 +20,7 @@ extension Data {
 }
 
 @objc(WaivpayKartaSdk)
-class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessionDelegate {
+public class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessionDelegate {
     
     var environment = "";
     var appid = "";
@@ -35,12 +35,12 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
     var customHost = "";
     var customHeader :[String:String] = [:];
     
-    @objc static func requiresMainQueueSetup() -> Bool {
+    @objc public static func requiresMainQueueSetup() -> Bool {
         return false
     }
     
     
-    func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
+    public func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, generateRequestWithCertificateChain certificates: [Data], nonce: Data, nonceSignature: Data, completionHandler handler: @escaping (PKAddPaymentPassRequest) -> Void) {
         
         
         _ = String(decoding: nonce, as: UTF8.self)
@@ -108,7 +108,7 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
 
     }
 
-    func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
+    public func addPaymentPassViewController(_ controller: PKAddPaymentPassViewController, didFinishAdding pass: PKPaymentPass?, error: Error?) {
         controller.dismiss(animated: true, completion: nil);
         if(pass != nil) {
             addToWalletResponse = true;
@@ -118,8 +118,8 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         returnResult = true;
     }
 
-    @objc(addCard:withC:withB:withE:withD:withA:withT:withU:withH:withResolver:withRejecter:)
-    func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, url: String, header: Dictionary<String,String>, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
+    @objc(addCard:cardSuffix:cardHolder:env:deliveryEmail:appId:accessToken:url:header:resolve:reject:)
+    public func addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String, url: String, header: Dictionary<String,String>, resolve: RCTPromiseResolveBlock,reject: RCTPromiseRejectBlock) -> Void {
         returnResult = false;
          environment = env;
          appid = appId;
@@ -240,36 +240,43 @@ class WaivpayKartaSdk: NSObject, PKAddPaymentPassViewControllerDelegate, WCSessi
         return (existsOnPhone && existsOnWatch);
     }
     
-    @objc(cardExists:withResolver:withRejecter:)
-    func cardExists(cardId: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(cardExists:resolve:reject:)
+    public func cardExists(cardId: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         resolve(getCardExists(cardId));
     }
     
-    @objc(startBeacon:withC:withResolver:withRejecter:)
-    func startBeacon(sessionToken: String, shop: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(startBeacon:shop:resolve:reject:)
+    public func startBeacon(sessionToken: String, shop: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         RiskifiedBeacon.start(shop, sessionToken: sessionToken, debugInfo: true);
     }
     
-    @objc(updateToken:withResolver:withRejecter:)
-    func updateToken(sessionToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(updateToken:resolve:reject:)
+    public func updateToken(sessionToken: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         RiskifiedBeacon.updateSessionToken(sessionToken);
     }
     
-    @objc(beaconLogRequest:withResolver:withRejecter:)
-    func beaconLogRequest(requestUrl: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(beaconLogRequest:resolve:reject:)
+    public func beaconLogRequest(requestUrl: String, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
         var reqUrl = URL.init(string: requestUrl);
         RiskifiedBeacon.logRequest(reqUrl);
     }
     
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+    @objc(checkIfReadyToPay:environment:resolve:reject:)
+    public func checkIfReadyToPay(jsonReq: String, environment: String, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
+        // Google Pay readiness is an Android-only path. On iOS this is a no-op
+        // stub to satisfy the TurboModule spec contract.
+        resolve(false);
+    }
+
+    public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
 //        print("session");
     }
     
-    func sessionDidBecomeInactive(_ session: WCSession) {
+    public func sessionDidBecomeInactive(_ session: WCSession) {
 //        print("sessionDidBecomeInactive");
     }
     
-    func sessionDidDeactivate(_ session: WCSession) {
+    public func sessionDidDeactivate(_ session: WCSession) {
 //        print("sessionDidDeactivate");
     }
     

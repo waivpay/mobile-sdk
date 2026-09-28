@@ -7,6 +7,14 @@
   "types": "lib/typescript/index.d.ts",
   "react-native": "src/index",
   "source": "src/index",
+  "codegenConfig": {
+    "name": "waivpayKartaSdk",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.waivpaykartasdk"
+    }
+  },
   "files": [
     "src",
     "lib",

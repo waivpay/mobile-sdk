@@ -7,7 +7,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-  const WaivpayKartaSdk = NativeModules['WaivpayKartaSdk']
+const WaivpayKartaSdk = NativeModules['WaivpayKartaSdk']
   ? NativeModules['WaivpayKartaSdk']
   : new Proxy(
       {},
@@ -18,11 +18,11 @@ const LINKING_ERROR =
       }
     );
 
-export async function addCard(cardId: String, cardSuffix: String, cardHolder: String, env: String, deliveryEmail: String, appId: String, accessToken: String): Promise<String> {
+export async function addCard(cardId: string, cardSuffix: string, cardHolder: string, env: string, deliveryEmail: string, appId: string, accessToken: string): Promise<boolean> {
   const config = await getConfig();
   var custHeader: {[key: string]: string} = {"":""};
   var url = "";
-  
+
   if(config != null && config.headers != null)
   {
     custHeader = config.headers;
@@ -33,22 +33,25 @@ export async function addCard(cardId: String, cardSuffix: String, cardHolder: St
   return WaivpayKartaSdk.addCard(cardId, cardSuffix, cardHolder, env, deliveryEmail, appId, accessToken, url, custHeader);
 }
 
-export function cardExists(cardId: String): Promise<String> {
+export function cardExists(cardId: string): Promise<boolean> {
   return WaivpayKartaSdk.cardExists(cardId);
 }
 
-export function checkIfReadyToPay(jsonReq: String, environment: String): Promise<String> {
+export function checkIfReadyToPay(jsonReq: string, environment: string): Promise<boolean> {
   return WaivpayKartaSdk.checkIfReadyToPay(jsonReq, environment);
-  
 }
-export function startBeacon(sessionToken: String, shop: String): Promise<String> {
+
+export function startBeacon(sessionToken: string, shop: string): Promise<void> {
   return WaivpayKartaSdk.startBeacon(sessionToken, shop);
 }
 
-export function updateToken(sessionToken: String): Promise<String> {
+export function updateToken(sessionToken: string): Promise<void> {
   return WaivpayKartaSdk.updateToken(sessionToken);
 }
 
-export function beaconLogRequest(requestUrl: String): Promise<String> {
+export function beaconLogRequest(requestUrl: string): Promise<void> {
   return WaivpayKartaSdk.beaconLogRequest(requestUrl);
 }
+
+export { getStores, setLogout } from './ApiCall';
+export type { Store } from './Models/Store';

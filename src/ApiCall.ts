@@ -161,7 +161,7 @@ export async function activateBeacon() {
   startBeacon(sid, config.shop);
 }
 
-async function logRequestBeacon(url: String) {
+async function logRequestBeacon(url: string) {
   beaconLogRequest(url);
 }
 
@@ -499,10 +499,12 @@ export async function getStores(locationId: number): Promise<Store[]> {
         locationId;
       await sendToEndPoint(config, 'GET', url, accessToken, null)
         .then((response) => {
-          resolve(response.stores.map(((store: Store) => {
-            let storeObj = new Store(store);
-            return Object.assign(storeObj, store);
-          })));
+          resolve(
+            response.stores.map((store: Store) => {
+              let storeObj = new Store(store);
+              return Object.assign(storeObj, store);
+            })
+          );
         })
         .catch((error: Error) => {
           reject(error);
@@ -716,6 +718,7 @@ export async function createProfile(user: Profile) {
         });
     });
   }
+  return Promise.reject(new Error('createProfile: invalid user'));
 }
 
 //create an order

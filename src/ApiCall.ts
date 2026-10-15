@@ -676,7 +676,7 @@ export async function removeCard(cardId: string): Promise<Card> {
 }
 
 //create a new user
-export async function createProfile(user: Profile) {
+export async function createProfile(user: Profile): Promise<Profile> {
   const config = await getConfig();
   consoleLog(config, 'API call - createProfile');
   if (user != null && user instanceof Profile) {
@@ -718,6 +718,7 @@ export async function createProfile(user: Profile) {
         });
     });
   }
+  return Promise.reject(new Error('createProfile: invalid user profile'));
 }
 
 //create an order
